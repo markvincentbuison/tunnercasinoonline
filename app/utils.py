@@ -28,10 +28,9 @@ def send_email(subject, body, recipient_email):
 
 # =============================================================================================================
 def send_verification_email(email, token, username):
-    """Sends a verification email to the user with a unique token."""
     subject = "Verify Your Email - TunNer"
-    verification_link = url_for('routes.verify_email', token=token, _external=True)
-    
+    verification_link = f"https://tunnercasino.onrender.com/verify-email/{token}"
+
     body = f"""
 Hi {username},
 
@@ -40,8 +39,7 @@ Hi {username},
 To complete your registration, please verify your email address by clicking the link below:
 🔗 {verification_link}
 
-This link will expire after a short period, so be sure to verify soon!  
-If you didn’t sign up for TunNer, please ignore this email.
+This link will expire in 1 hour. If you didn’t sign up for TunNer, please ignore this email.
 
 Cheers,  
 ✨ The TunNer Team
@@ -110,3 +108,17 @@ def update_user_password(email, hashed_password):
     """Updates the user’s password in the database."""
     # Implement logic to update the user's password.
     pass
+
+
+
+def get_serializer():
+    return URLSafeTimedSerializer(routes.config['SECRET_KEY'])
+
+def confirm_token(token, expiration=3600):
+    serializer = get_serializer()
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age=expiration)
+    except Exception as e:
+        print(f"Token confirmation error: {e}")
+        return None
+    return email

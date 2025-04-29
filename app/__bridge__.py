@@ -42,7 +42,8 @@ def create_app():
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-
+    app.config['ENV'] = 'production'  # Ensure this is set in production
+    app.config['BASE_URL'] = 'https://tunnercasino.onrender.com'
     app.config['UPLOAD_FOLDER'] = 'static/background/'
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
     
