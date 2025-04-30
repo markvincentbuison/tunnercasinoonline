@@ -29,7 +29,6 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask import Flask, request, redirect, url_for, session, render_template
 import os
 from werkzeug.utils import secure_filename
-import jwt
 #--------------------------------------------------------------------------------------------------
 # Load environment variables from .env file
 load_dotenv()
