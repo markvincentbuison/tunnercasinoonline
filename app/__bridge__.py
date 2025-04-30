@@ -14,7 +14,7 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(routes)
-
+    USE_NGROK = os.environ.get("USE_NGROK") == "True"
     # Create the Google OAuth blueprint
     google_bp = make_google_blueprint(
             client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),

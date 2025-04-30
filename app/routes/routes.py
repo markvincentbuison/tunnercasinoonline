@@ -120,12 +120,10 @@ def callback():
     print("Google OAuth callback triggered.")
     redirect_uri = get_redirect_uri()
     print(f"Using redirect URI: {redirect_uri}")
-
-    # Debug: Full URL received from Google
     print(f"Authorization Response URL: {request.url}")
 
-    # ✅ Insert ALLOWED_HOSTS check here
-    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "tunnercasinoonline.onrender.com"]
+    # ✅ ALLOWED_HOSTS check for security
+    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "tunnercasinoonline.onrender.com", "ngrok-free.app"]
     if not any(host in request.host for host in ALLOWED_HOSTS):
         print("Unauthorized callback host detected. Clearing session and blocking.")
         session.clear()
@@ -134,6 +132,7 @@ def callback():
         return response
 
     try:
+        # OAuth flow setup
         flow = Flow.from_client_secrets_file(
             client_secrets_file=get_client_secrets_file(),
             scopes=[
@@ -143,7 +142,6 @@ def callback():
             ],
             redirect_uri=redirect_uri
         )
-
         flow.fetch_token(authorization_response=request.url)
         credentials = flow.credentials
 
@@ -156,38 +154,35 @@ def callback():
         )
         print("ID token verified!")
 
-        # Store Google user data in session
+        # Store user data in session
         session["google_id"] = id_info.get("sub")
         session["name"] = id_info.get("name", "Guest")
         session["email"] = id_info.get("email")
         session["picture"] = id_info.get("picture", "")
-
         print(f"Logged in as: {session['email']}")
 
-        # Insert user data into PostgreSQL if not already in the database
+        # Insert user into DB if new
         from app.routes.postgresql import get_db_connection
         conn = get_db_connection()
         cur = conn.cursor()
-
-        # Check if user already exists by Google ID
         cur.execute("SELECT id FROM users WHERE google_id = %s", (session["google_id"],))
-        existing_user = cur.fetchone()
-
-        if not existing_user:
+        if not cur.fetchone():
             cur.execute("""
                 INSERT INTO users (username, email_address, google_id, picture, is_verified)
                 VALUES (%s, %s, %s, %s, %s)
             """, (session["name"], session["email"], session["google_id"], session["picture"], True))
             conn.commit()
-
         cur.close()
         conn.close()
 
-        # ✅ Fixed redirect logic
-        if IS_PRODUCTION:
+        # ✅ Smart dynamic redirect based on host
+        host = request.host
+        if "tunnercasinoonline.onrender.com" in host:
             return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
+        elif "ngrok-free.app" in host:
+            return redirect("https://9de0-112-203-134-9.ngrok-free.app/dashboard")
         else:
-            return redirect(url_for("routes.dashboard_manual_login", _external=True))
+            return redirect(url_for("routes.manual_login", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
