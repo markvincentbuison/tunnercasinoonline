@@ -156,7 +156,6 @@ def callback():
         print(f"Logged in as: {session['email']}")
 
         # Insert user data into PostgreSQL if not already in the database
-        from app.routes.postgresql import get_db_connection
         conn = get_db_connection()
         cur = conn.cursor()
 
@@ -165,25 +164,28 @@ def callback():
         existing_user = cur.fetchone()
 
         if not existing_user:
+            print("New user detected. Inserting user into the database...")
             cur.execute("""
                 INSERT INTO users (username, email_address, google_id, picture, is_verified)
                 VALUES (%s, %s, %s, %s, %s)
             """, (session["name"], session["email"], session["google_id"], session["picture"], True))
             conn.commit()
-
+            print(f"User {session['name']} added to the database.")
+        
         cur.close()
         conn.close()
 
         # ✅ Fixed redirect logic
         if IS_PRODUCTION:
-            return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
+            print("Redirecting to the production dashboard...")
+            return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin", code=302)
         else:
+            print("Redirecting to the local dashboard...")
             return redirect(url_for("routes.dashboard", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
-        abort(500, f"OAuth callback failed: {e}")
-
+        return abort(500, f"OAuth callback failed: {e}")
 #--------------------------------------------------------------------------------------------------
 # Logout route to clear the session
 @routes.route("/logout")
