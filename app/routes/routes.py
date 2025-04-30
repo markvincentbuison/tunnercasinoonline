@@ -338,7 +338,7 @@ def login():
 def ping_self():
     while True:
         try:
-            time.sleep(1200)  # every 20 minutes
+            time.sleep(400)  # every 20 minutes
             requests.get("https://tunnercasino.onrender.onrender.com/")
         except Exception as e:
             print(f"[Keep-Alive Ping Error] {e}")
