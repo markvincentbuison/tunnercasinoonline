@@ -17,10 +17,10 @@ def create_app():
 
     # Create the Google OAuth blueprint
     google_bp = make_google_blueprint(
-        client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
-        client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
-        redirect_to="dashboard_google_signin",  # Flask route function name (internal route)
-        redirect_url=os.getenv("REDIRECT_URI")  # Your production /callback URL
+            client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+            client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+            redirect_to="dashboard_google_signin"
+            
     )
     
     # Register the Google OAuth blueprint with Flask
