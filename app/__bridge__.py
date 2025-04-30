@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from app.extensions.mail import mail
 from app.routes.routes import routes  # ✅ Safe here
-from flask import Blueprint
+from flask_dance.contrib.google import make_google_blueprint  # Import the Google blueprint
+
 #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 # Load environment variables from .env
 #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -13,6 +14,18 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(routes)
+
+    # Create the Google OAuth blueprint
+    google_bp = make_google_blueprint(
+        client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+        client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+        redirect_to="dashboard_google_signin",  # Flask route function name (internal route)
+        redirect_url=os.getenv("REDIRECT_URI")  # Your production /callback URL
+    )
+    
+    # Register the Google OAuth blueprint with Flask
+    app.register_blueprint(google_bp, url_prefix="/login")
+
     app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
     app.secret_key = os.getenv("SECRET_KEY", "asdasdasdasdasdasd")  # Default value for development
 
@@ -37,7 +50,8 @@ def create_app():
         )
     # Set session expiration time (ensure it's in the create_app function)
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-            # Flask-Mail config using environment variables
+    
+    # Flask-Mail config using environment variables
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
@@ -47,9 +61,8 @@ def create_app():
 
     app.config['UPLOAD_FOLDER'] = 'static/background/'
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-    
-    
-        # Initialize Flask-Mail
+
+    # Initialize Flask-Mail
     mail.init_app(app)
     #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
