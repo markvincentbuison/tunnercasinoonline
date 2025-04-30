@@ -1,3 +1,6 @@
 ".env" 
 "certs/client_secret_dev.json" 
 "certs/client_secret_prod.json" 
+".env" 
+"certs/client_secret_dev.json" 
+"certs/client_secret_prod.json" 

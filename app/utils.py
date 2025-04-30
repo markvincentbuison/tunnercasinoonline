@@ -29,7 +29,7 @@ def send_email(subject, body, recipient_email):
 # =============================================================================================================
 def send_verification_email(email, token, username):
     subject = "Verify Your Email - TunNer"
-    verification_link = f"https://tunnercasino.onrender.com/verify-email/{token}"
+    verification_link = f"https://tunnercasinoonline.onrender.com/verify-email/{token}"
 
     body = f"""
 Hi {username},

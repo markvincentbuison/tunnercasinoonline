@@ -64,7 +64,7 @@ def get_client_secrets_file():
 def get_redirect_uri():
     if IS_PRODUCTION:
         return "https://127.0.0.1:5000/callback"
-    return "https://tunnercasino.onrender.com/callback"
+    return "https://tunnercasinoonlineonline.onrender.com/callback"
 #--------------------------------------------------------------------------------------------------
 # Login required decorator to ensure user is logged in
 def login_is_required(f):
@@ -77,7 +77,7 @@ def login_is_required(f):
 #--------------------------------------------------------------------------------------------------
 @routes.route("/login/google")
 def login_google():
-    deployed_url = "tunnercasino.onrender.com"
+    deployed_url = "tunnercasinoonline.onrender.com"
 
     # Avoid redirect loop on non-allowed hosts
     if deployed_url not in request.host and "127.0.0.1" not in request.host and "192.168." not in request.host:
@@ -121,7 +121,7 @@ def callback():
     print(f"Authorization Response URL: {request.url}")
 
     # ✅ Insert ALLOWED_HOSTS check here
-    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "tunnercasino.onrender.com"]
+    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "tunnercasinoonline.onrender.com"]
     if not any(host in request.host for host in ALLOWED_HOSTS):
         print("Unauthorized callback host detected. Clearing session and blocking.")
         session.clear()
