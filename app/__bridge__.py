@@ -1,9 +1,10 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from app.routes.routes import routes  # ✅ Corrected import
 from datetime import timedelta
 from app.extensions.mail import mail
+from app.routes.routes import routes  # ✅ Safe here
+from flask import Blueprint
 #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 # Load environment variables from .env
 #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -11,9 +12,10 @@ load_dotenv()
 #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 def create_app():
     app = Flask(__name__)
+    app.register_blueprint(routes)
     app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
     app.secret_key = os.getenv("SECRET_KEY", "asdasdasdasdasdasd")  # Default value for development
-    app.register_blueprint(routes)
+
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")
     
@@ -42,15 +44,13 @@ def create_app():
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
-    app.config['ENV'] = 'production'  # Ensure this is set in production
-    app.config['BASE_URL'] = 'https://tunnercasino.onrender.com'
+
     app.config['UPLOAD_FOLDER'] = 'static/background/'
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
     
-
+    
         # Initialize Flask-Mail
     mail.init_app(app)
     #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     return app
-

@@ -12,6 +12,24 @@ from flask import render_template
 from flask import session
 from flask import current_app
 import mysql.connector
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask_mail import Message
+from flask_dance.contrib.google import google
+from app.extensions.mail import mail
+from app.utils import (generate_token, send_email, send_verification_email, send_reset_email)
+import bcrypt
+import re
+from datetime import datetime, timedelta
+import logging
+import psycopg2.extras
+from flask import current_app as app
+from itsdangerous import URLSafeTimedSerializer
+from flask import render_template, request, redirect, url_for, flash, session
+# =====Upload Picture============================================================================================================
+from flask import Flask, request, redirect, url_for, session, render_template
+import os
+from werkzeug.utils import secure_filename
+import jwt
 #--------------------------------------------------------------------------------------------------
 # Load environment variables from .env file
 load_dotenv()
@@ -246,26 +264,6 @@ def test_db():
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from flask_mail import Message
-from flask_dance.contrib.google import google
-from app.extensions.mail import mail
-from app.utils import (generate_token, send_email, send_verification_email, send_reset_email)
-import bcrypt
-import re
-from datetime import datetime, timedelta
-import logging
-import psycopg2.extras
-from flask import current_app as app
-from itsdangerous import URLSafeTimedSerializer
-from flask import render_template, request, redirect, url_for, flash, session
-
-# =====Upload Picture============================================================================================================
-from flask import Flask, request, redirect, url_for, session, render_template
-import os
-from werkzeug.utils import secure_filename
-import jwt
-
 # =================================================================================================================
 def validate_username(username):
     if len(username) < 3 or len(username) > 16:
@@ -273,15 +271,15 @@ def validate_username(username):
     if not re.match("^[A-Za-z0-9]*$", username):
         return "Username can only contain letters and numbers."
     return None
-#==============Login=============================================================================================
+#============== Manual Login Dashboard =============================================================================================
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-#==============Login=============================================================================================
+#============== Manual Login Dashboard =============================================================================================
 @routes.route('/login', methods=['POST'])
 def login():
     # Prevent logged-in users from going back to login page
     if 'user_id' in session:
-        return redirect(url_for('routes.dashboardx'))  # Redirect to dashboard if already logged in
+        return redirect(url_for('routes.manual_login'))  # Redirect to dashboard if already logged in
 
     username = request.form['username']
     password = request.form['password']
@@ -313,7 +311,7 @@ def login():
                     session['user_id'] = user[0]
                     session['username'] = user[1]
                     session['is_admin'] = user[-2]
-                    return redirect(url_for('routes.dashboardx'))
+                    return redirect(url_for('routes.manual_login'))
                 else:
                     flash('Incorrect password.', 'danger')
             else:
@@ -325,71 +323,46 @@ def login():
         flash('User not found.', 'danger')
 
     return redirect(url_for('routes.index'))
-#=============Dashboard==============================================================================================
-@routes.route('/dashboard-manual-login')
-def dashboardx():
-    # Check if user is logged in by checking session for user_id
+#=============Manual Login Dashboard==============================================================================================
+@routes.route('/dashboard-manual_login')
+def manual_login():
     if 'user_id' not in session:
         flash('You need to login to access the system', 'warning')
         return redirect(url_for('routes.index'))
-    
-    # Establish database connection
     conn = get_db_connection()
     if not conn:
         flash('Failed to connect to the database', 'danger')
         return redirect(url_for('routes.index'))
-    
-    # Create a cursor for executing SQL queries
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)   
     try:
-        # Fetch the username, email, is_admin, and is_verified for the logged-in user
         cursor.execute("SELECT username, email_address, is_admin, is_verified FROM users WHERE id=%s", (session['user_id'],))
         user = cursor.fetchone()
-        
-        # Check if user data was found
         if not user:
             flash('No user found. Please log in again.', 'danger')
             return redirect(url_for('routes.logout'))
-
-        # Extract user information
         username, email, is_admin, is_verified = user
-
-        # Save is_admin, is_verified, and email in session for future use
         session['is_admin'] = is_admin
         session['is_verified'] = is_verified
         session['email'] = email
-
-        # Debugging: Log the user data
         print(f"User found: {username}, is_admin: {is_admin}, is_verified: {is_verified}, email: {email}")
-        
-        # Handle email verification status in dashboard
         if is_verified:
             print(f"User {username} is verified.")
         else:
             print(f"User {username} is not verified. Please check your email.")
-
-        # Render appropriate dashboard based on user role
         if is_admin:
             print(f"Rendering admin dashboard for {username}")
             return render_template('admin_dashboard.html', username=username, is_verified=is_verified, email=email)
         else:
-            # Provide a default profile picture
             picture = 'background/bp1.png'
             print(f"Rendering user dashboard for {username}")
             return render_template('user_dashboard.html', username=username, is_verified=is_verified, email=email, profile_picture=picture)
-
     except Exception as e:
-        # Log any exceptions
         print(f"Error: {str(e)}")
         flash('An error occurred while fetching your data. Please try again later.', 'danger')
         return redirect(url_for('routes.index'))
-    
     finally:
-        # Ensure the cursor and connection are closed after the operation
         cursor.close()
         conn.close()
-
 #=======================================================================================================================
 # Signup route
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
@@ -410,22 +383,18 @@ def signup():
     if not email_address:
         flash('Email address is required.', 'danger')
         return redirect(url_for('routes.index'))
-
     # Validate username
     if (err := validate_username(username)):
         flash(err, 'danger')
         return redirect(url_for('routes.index'))
-
     # Check if passwords match
     if password != confirmation_password:
         flash('Passwords do not match.', 'danger')
         return redirect(url_for('routes.index'))
-
     # Password strength validation (example: minimum length of 8 characters)
     if len(password) < 8:
         flash('Password must be at least 8 characters long.', 'danger')
         return redirect(url_for('routes.index'))
-
     conn = None
     cursor = None
     try:
@@ -434,41 +403,32 @@ def signup():
         # Generate verification token
         verification_token = generate_token()
         verification_expiry = datetime.utcnow() + timedelta(hours=1)
-
         conn = get_db_connection()
         cursor = conn.cursor()
-
         # Check if username or email already exists
         cursor.execute("SELECT * FROM users WHERE username=%s OR email_address=%s", (username, email_address))
         if cursor.fetchone():
             flash('Username or Email already exists.', 'danger')
             return redirect(url_for('routes.index'))
-
         # Set default profile picture
         default_profile_picture = 'background/bp1.png'
-
         # Insert new user into database
         cursor.execute("""
             INSERT INTO users (username, password, email_address, verification_token, verification_token_expiry, is_verified, picture)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (username, hashed_password, email_address, verification_token, verification_expiry, False, default_profile_picture))
         conn.commit()
-
         # Send verification email
         send_verification_email(email_address, verification_token, username)
-
         flash('Signup successful. Check your email to verify your account.', 'success')
-
     except Exception as e:
         print(f"Signup error: {e}")
         flash('An error occurred during signup. Please try again.', 'danger')
-
     finally:
         if cursor:
             cursor.close()
         if conn:
             conn.close()
-
     return redirect(url_for('routes.index'))
 #======================================================================================================================
 from flask import render_template, flash, redirect, url_for
