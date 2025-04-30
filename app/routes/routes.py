@@ -200,14 +200,14 @@ def logout():
 @routes.route("/")
 def index():
     if "google_id" in session:
-        return redirect("/dashboard_google_signin")
+        return redirect("/dashboard")
     response = make_response(render_template("index.html"))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     return response
 #--------------------------------------------------------------------------------------------------
 # Protected area route (for logged-in users)
-@routes.route("/dashboard_google_signin")
+@routes.route("/dashboard")
 @login_is_required
 def dashboard():
     # Get the session data (name, email, etc.)
@@ -241,8 +241,6 @@ def dashboard():
 
     # Pass everything to the template
     return render_template("user_dashboard.html", name=name, email=email, picture=picture, is_verified=is_verified)
-
-
 #--------------------------------------------------------------------------------------------------
 @routes.route('/test-db')
 def test_db():
