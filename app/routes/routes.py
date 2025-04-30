@@ -180,7 +180,7 @@ def callback():
         conn.close()
 
       # Redirect user to production dashboard after successful login
-        return redirect(url_for('routes.dashboard', _external=True))  # ✅ Redirect to production URL
+        return redirect(url_for("routes.dashboard", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
