@@ -27,7 +27,7 @@ def create_app():
     app.register_blueprint(google_bp, url_prefix="/login")
 
     app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
-    app.secret_key = os.getenv("SECRET_KEY", "asdasdasdasdasdasd")  # Default value for development
+    app.secret_key = os.getenv("SECRET_KEY", "your_random_secret_key")  # Default value for development
 
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")

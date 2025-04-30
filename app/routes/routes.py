@@ -187,7 +187,7 @@ def callback():
         if IS_PRODUCTION:
             return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
         else:
-            return redirect(url_for("routes.dashboard", _external=True))
+            return redirect(url_for("routes.dashboard_manual_login", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
