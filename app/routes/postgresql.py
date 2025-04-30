@@ -8,14 +8,13 @@ load_dotenv()
 
 def get_db_connection():
     try:
-        # First try full DATABASE_URL
         database_url = os.getenv("DATABASE_URL")
         if database_url:
             conn = connect(
                 dsn=database_url,
                 cursor_factory=RealDictCursor
             )
-            print("Connected successfully using DATABASE_URL")
+            print("✅ Connected using DATABASE_URL")
             return conn
         else:
             raise ValueError("DATABASE_URL not set")
@@ -28,10 +27,12 @@ def get_db_connection():
                 dbname=os.getenv("DB_NAME"),
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASSWORD"),
+                sslmode="require",  # Important for Render!
                 cursor_factory=RealDictCursor
             )
-            print("Connected successfully using individual DB variables")
+            print("Connected using individual DB variables")
             return conn
         except Exception as e2:
             print("PostgreSQL Connection Error:", e2)
             return None
+
