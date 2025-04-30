@@ -180,7 +180,7 @@ def callback():
         conn.close()
 
       # Redirect user to production dashboard after successful login
-        return redirect(url_for("dashboard", _external=True))  # ✅ Redirect to production URL
+        return redirect(url_for('routes.dashboard', _external=True))  # ✅ Redirect to production URL
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
@@ -323,7 +323,7 @@ def login():
 
     return redirect(url_for('routes.index'))
 #=============Manual Login Dashboard==============================================================================================
-@routes.route('/dashboard-manual_login')
+@routes.route('/dashboard_manual_login')
 def manual_login():
     if 'user_id' not in session:
         flash('You need to login to access the system', 'warning')
