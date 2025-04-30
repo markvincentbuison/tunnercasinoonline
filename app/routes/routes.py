@@ -179,12 +179,16 @@ def callback():
         cur.close()
         conn.close()
 
-      # Redirect user to production dashboard after successful login
-        return redirect(url_for("routes.dashboard", _external=True))
+        # ✅ Fixed redirect logic
+        if IS_PRODUCTION:
+            return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
+        else:
+            return redirect(url_for("routes.dashboard", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
         abort(500, f"OAuth callback failed: {e}")
+
 #--------------------------------------------------------------------------------------------------
 # Logout route to clear the session
 @routes.route("/logout")
@@ -230,13 +234,15 @@ def dashboard():
         conn.close()
 
     # Handle verification status safely
-    if verification_status:
-        is_verified = verification_status['is_verified']  # <-- fix here
+    if verification_status and isinstance(verification_status, tuple):
+        is_verified = verification_status[0]  # This will be the value of `is_verified`
     else:
-        is_verified = False  # Default if no result found
+        is_verified = False  # Default if no result found or if verification_status is not valid
 
     # Pass everything to the template
     return render_template("user_dashboard.html", name=name, email=email, picture=picture, is_verified=is_verified)
+
+
 #--------------------------------------------------------------------------------------------------
 @routes.route('/test-db')
 def test_db():
@@ -489,8 +495,55 @@ def verify_email(token):
             conn.close()
 
 #=======================================================================================================================
+@routes.route('/signup', methods=['POST'], endpoint='signup_post')  # Unique endpoint name
+def signup_user():  # Renamed function to avoid overwriting
+    username = request.form.get('username')
+    password = request.form.get('password')
+    email = request.form.get('email_address')
+    confirmation_password = request.form.get('confirm_password')
 
+    if not email:
+        flash('Email address is required.', 'danger')
+        return redirect(url_for('routes.index'))
 
+    if (err := validate_username(username)):
+        flash(err, 'danger')
+        return redirect(url_for('routes.index'))
+
+    if password != confirmation_password:
+        flash('Passwords do not match.', 'danger')
+        return redirect(url_for('routes.index'))
+
+    try:
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        verification_token = generate_token()
+        verification_expiry = datetime.utcnow() + timedelta(hours=1)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username=%s OR email_address=%s", (username, email))
+        if cursor.fetchone():
+            flash('Username or Email already exists.', 'danger')
+            return redirect(url_for('routes.index'))
+
+        cursor.execute("""
+            INSERT INTO users (username, password, email_address, verification_token, verification_token_expiry, is_verified)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (username, hashed_password, email, verification_token, verification_expiry, False))
+        conn.commit()
+
+        send_verification_email(email, verification_token, username)
+        flash('Signup successful. Check your email to verify your account.', 'success')
+
+    except Exception as e:
+        print("Signup error:", e)
+        flash('An error occurred during signup. Please try again.', 'danger')
+
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+    return redirect(url_for('routes.index'))
 #=== FOR SIGN UP FOR SENDING A VERIFICATION TO EMAIL====================================================================
 
 #=======================================================================================================================
