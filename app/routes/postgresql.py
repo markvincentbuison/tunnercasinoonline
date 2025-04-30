@@ -1,4 +1,5 @@
-import psycopg2
+from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
 
@@ -7,23 +8,30 @@ load_dotenv()
 
 def get_db_connection():
     try:
-        db_url = os.getenv("DATABASE_URL")
-        if db_url:
-            conn = psycopg2.connect(db_url, sslmode='require')
+        # First try full DATABASE_URL
+        database_url = os.getenv("DATABASE_URL")
+        if database_url:
+            conn = connect(
+                dsn=database_url,
+                cursor_factory=RealDictCursor
+            )
             print("Connected successfully using DATABASE_URL")
             return conn
         else:
-            print("DATABASE_URL not found. Falling back to individual credentials.")
-            conn = psycopg2.connect(
+            raise ValueError("DATABASE_URL not set")
+    except Exception as e:
+        print("Failed with DATABASE_URL, falling back to individual variables. Error:", e)
+        try:
+            conn = connect(
                 host=os.getenv("DB_HOST"),
-                database=os.getenv("DB_NAME"),
+                port=os.getenv("DB_PORT"),
+                dbname=os.getenv("DB_NAME"),
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASSWORD"),
-                port=os.getenv("DB_PORT"),
-                sslmode='require'
+                cursor_factory=RealDictCursor
             )
-            print("Connected successfully using individual credentials")
+            print("Connected successfully using individual DB variables")
             return conn
-    except Exception as e:
-        print("PostgreSQL Connection Error:", e)
-        return None
+        except Exception as e2:
+            print("PostgreSQL Connection Error:", e2)
+            return None
