@@ -18,7 +18,7 @@ def create_app():
 
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")
-    
+
     # Session cookie configuration
     if env == "development":
         app.config.update(
