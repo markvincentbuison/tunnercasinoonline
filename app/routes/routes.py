@@ -44,11 +44,6 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------
 # Define CLIENT_SECRETS_FILE globally by using a helper function
 def get_client_secrets_file():
     host = request.host
@@ -200,14 +195,14 @@ def logout():
 @routes.route("/")
 def index():
     if "google_id" in session:
-        return redirect("/dashboard")
+        return redirect("/dashboard_google_signin")
     response = make_response(render_template("index.html"))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     return response
 #--------------------------------------------------------------------------------------------------
 # Protected area route (for logged-in users)
-@routes.route("/dashboard")
+@routes.route("/dashboard_google_signin")
 @login_is_required
 def dashboard():
     # Get the session data (name, email, etc.)
