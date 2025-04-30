@@ -29,6 +29,10 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask import Flask, request, redirect, url_for, session, render_template
 import os
 from werkzeug.utils import secure_filename
+# =====this below for for render connecting 24/7=====================
+import threading
+import time
+import requests
 #--------------------------------------------------------------------------------------------------
 # Load environment variables from .env file
 load_dotenv()
@@ -41,6 +45,11 @@ IS_PRODUCTION = os.getenv("FLASK_ENV") == "production"
 #--------------------------------------------------------------------------------------------------
 # Load Google OAuth Client ID from environment
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
@@ -156,6 +165,7 @@ def callback():
         print(f"Logged in as: {session['email']}")
 
         # Insert user data into PostgreSQL if not already in the database
+        from app.routes.postgresql import get_db_connection
         conn = get_db_connection()
         cur = conn.cursor()
 
@@ -164,26 +174,25 @@ def callback():
         existing_user = cur.fetchone()
 
         if not existing_user:
-            print("New user detected. Inserting user into the database...")
             cur.execute("""
                 INSERT INTO users (username, email_address, google_id, picture, is_verified)
                 VALUES (%s, %s, %s, %s, %s)
             """, (session["name"], session["email"], session["google_id"], session["picture"], True))
             conn.commit()
-            print(f"User {session['name']} added to the database.")
-        
+
         cur.close()
         conn.close()
 
         # ✅ Fixed redirect logic
         if IS_PRODUCTION:
-            return redirect(url_for("routes.dashboard", _external=True))
+            return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
         else:
-            return redirect(url_for("routes.dashboard"))
+            return redirect(url_for("routes.dashboard", _external=True))
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
-        return abort(500, f"OAuth callback failed: {e}")
+        abort(500, f"OAuth callback failed: {e}")
+
 #--------------------------------------------------------------------------------------------------
 # Logout route to clear the session
 @routes.route("/logout")
@@ -236,6 +245,8 @@ def dashboard():
 
     # Pass everything to the template
     return render_template("user_dashboard.html", name=name, email=email, picture=picture, is_verified=is_verified)
+
+
 #--------------------------------------------------------------------------------------------------
 @routes.route('/test-db')
 def test_db():
@@ -321,6 +332,20 @@ def login():
         flash('User not found.', 'danger')
 
     return redirect(url_for('routes.index'))
+
+#======================================================================================================================
+# ===================== 24/7 Render Keep-Alive ==========================
+def ping_self():
+    while True:
+        try:
+            time.sleep(1200)  # every 20 minutes
+            requests.get("https://tunnercasino.onrender.onrender.com/")
+        except Exception as e:
+            print(f"[Keep-Alive Ping Error] {e}")
+
+keep_alive_thread = threading.Thread(target=ping_self)
+keep_alive_thread.daemon = True
+keep_alive_thread.start()
 #=============Manual Login Dashboard==============================================================================================
 @routes.route('/dashboard_manual_login')
 def manual_login():

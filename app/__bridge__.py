@@ -61,7 +61,9 @@ def create_app():
 
     app.config['UPLOAD_FOLDER'] = 'static/background/'
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-
+# Force HTTPS for production
+    if app.env == 'production':
+        app.config['PREFERRED_URL_SCHEME'] = 'https'
     # Initialize Flask-Mail
     mail.init_app(app)
     #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
