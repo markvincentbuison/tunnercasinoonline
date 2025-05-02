@@ -30,9 +30,6 @@ from flask import Flask, request, redirect, url_for, session, render_template
 import os
 from werkzeug.utils import secure_filename
 # =====this below for for render connecting 24/7=====================
-import threading
-import time
-import requests
 #--------------------------------------------------------------------------------------------------
 # Load environment variables from .env file
 load_dotenv()
@@ -330,13 +327,22 @@ def login():
 
 #======================================================================================================================
 # ===================== 24/7 Render Keep-Alive ==========================
+# Disable SSL warnings (optional, not for production)
+import threading
+import time
+import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 def ping_self():
     while True:
         try:
-            time.sleep(400)  # every 20 minutes
-            requests.get("https://tunnercasinoonline.onrender.com/")
+            response = requests.get("https://tunnercasinoonline.onrender.com/", verify=False, timeout=10)
+            print(f"[{time.ctime()}] Pinged successfully with status {response.status_code}")
         except Exception as e:
             print(f"[Keep-Alive Ping Error] {e}")
+        time.sleep(600)  # 600 seconds = 10 minutes
 
 keep_alive_thread = threading.Thread(target=ping_self)
 keep_alive_thread.daemon = True
