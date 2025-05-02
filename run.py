@@ -1,18 +1,16 @@
 from dotenv import load_dotenv
-from app.__bridge__ import create_app
 import os
+from app.__bridge__ import create_app
 
-from dotenv import load_dotenv
+# Load environment variables from .env file
 load_dotenv()
 
-# Create the app
+# Create the Flask app
 app = create_app()
 
-
 if __name__ == "__main__":
-    
-    # Check if we're in a production environment on Render
-    if os.getenv('RENDER') is None:  # Not on Render, use SSL locally
+    # Check if we're running on Render (production)
+    if os.getenv('RENDER') is None:  # Local development
         cert_path = os.path.join(os.getcwd(), 'certs', 'server.crt')
         key_path = os.path.join(os.getcwd(), 'certs', 'server.key')
 
@@ -22,9 +20,6 @@ if __name__ == "__main__":
         else:
             print("SSL certificates not found. Starting app without SSL.")
             app.run(debug=True, host='0.0.0.0', port=5000)
-    else:  # On Render, don't use SSL manually
-        print("Running on Render. Starting app without SSL.")
+    else:
+        print("Running on Render. Starting app without manual SSL.")
         app.run(debug=True, host='0.0.0.0', port=5000)
-        
-        
-#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────S

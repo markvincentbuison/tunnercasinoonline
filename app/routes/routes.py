@@ -177,7 +177,7 @@ def callback():
         if "tunnercasinoonline.onrender.com" in host:
             return redirect("https://tunnercasinoonline.onrender.com/dashboard_google_signin")
         elif "ngrok-free.app" in host:
-            return redirect("https://9de0-112-203-134-9.ngrok-free.app/dashboard")
+            return redirect(request.host_url + "dashboard_google_signin")
         else:
             return redirect(url_for("routes.manual_login", _external=True))
 
