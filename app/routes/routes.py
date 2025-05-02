@@ -334,7 +334,7 @@ def ping_self():
     while True:
         try:
             time.sleep(400)  # every 20 minutes
-            requests.get("https://tunnercasinoonline.onrender.onrender.com/")
+            requests.get("https://tunnercasinoonline.onrender.com/")
         except Exception as e:
             print(f"[Keep-Alive Ping Error] {e}")
 
@@ -571,3 +571,17 @@ def signup_user():  # Renamed function to avoid overwriting
 #=======================================================================================================================
 #===========FORGOT PASSWORD PANEL=======================================================================================
 #============================FORGOT PASSWORD============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
