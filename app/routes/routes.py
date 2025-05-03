@@ -6,7 +6,8 @@ from google.oauth2 import id_token
 from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 from functools import wraps
-from flask import url_for
+#--------------------------------------------------------------------------------------------------
+# This Import is for Templates
 from flask import render_template
 
 #---------------------------------------------------------------------------------------------------
@@ -53,7 +54,7 @@ def login_is_required(f):
 # Google OAuth Login route
 from flask import make_response
 
-@google_bp.route("/login/google")
+@google_bp.route("/login")
 def login():
     deployed_url = "tunnercasinoonline.onrender.com"
 
@@ -138,9 +139,7 @@ def callback():
         session["picture"] = id_info.get("picture", "")
 
         print(f"Logged in as: {session['email']}")
-        return redirect(url_for("google_bp.dashboard", _external=True))
-
-
+        return redirect("/dashboard")
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
@@ -171,4 +170,5 @@ def dashboard():
     picture = session.get("picture")
 
     return render_template("user_dashboard.html", name=name, email=email, picture=picture)
+    
 #--------------------------------------------------------------------------------------------------
