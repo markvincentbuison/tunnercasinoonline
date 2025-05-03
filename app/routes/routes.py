@@ -6,8 +6,7 @@ from google.oauth2 import id_token
 from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 from functools import wraps
-#--------------------------------------------------------------------------------------------------
-# This Import is for Templates
+from flask import url_for
 from flask import render_template
 
 #---------------------------------------------------------------------------------------------------
@@ -139,7 +138,8 @@ def callback():
         session["picture"] = id_info.get("picture", "")
 
         print(f"Logged in as: {session['email']}")
-        return redirect("/dashboard")
+        return redirect(url_for("dashboard", _external=True))
+
 
     except Exception as e:
         print(f"Error during Google login callback: {e}")
