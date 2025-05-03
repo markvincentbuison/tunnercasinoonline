@@ -467,6 +467,7 @@ from app.utils import confirm_token
 from app.routes.routes import get_db_connection  # Adjust the import path if needed
 from app.utils import confirm_token, generate_token, send_email
 from flask import Blueprint, request, redirect, url_for, flash
+from itsdangerous import URLSafeTimedSerializer
 
 @routes.route('/verify-email/<token>')
 def verify_email(token):
@@ -539,8 +540,11 @@ def verify_email(token):
 def reset_password(token):
     print(f"Received token: {token}")  # Debugging
     email = confirm_token(token)
+    
+    # Debugging to check token validation
+    print(f"Email after token confirmation: {email}")  # Debugging
+    
     if not email:
-        print(f"Email after token confirmation: {email}")  # Debugging
         flash("Invalid or expired verification link.", "danger")
         return redirect(url_for('routes.index'))  # Redirect if token is invalid or expired
 
@@ -562,6 +566,9 @@ def reset_password(token):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
+
+            # Debugging SQL execution
+            print(f"Executing query to update password for {email}")
 
             # Update the password for the user
             cursor.execute("""
