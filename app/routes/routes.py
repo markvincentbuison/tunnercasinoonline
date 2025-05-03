@@ -138,7 +138,8 @@ def callback():
         session["picture"] = id_info.get("picture", "")
 
         print(f"Logged in as: {session['email']}")
-        return redirect(url_for("dashboard", _external=True))
+        return redirect(url_for("google_bp.dashboard", _external=True))
+
 
 
     except Exception as e:
