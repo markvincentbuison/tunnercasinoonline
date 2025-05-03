@@ -169,6 +169,6 @@ def dashboard():
     email = session.get("email")
     picture = session.get("picture")
 
-    return render_template("user_dashboard.html", name=name, email=email, picture=picture)
-    
+    return render_template("dashboard.html", name=name, email=email, picture=picture)
+
 #--------------------------------------------------------------------------------------------------
