@@ -1,19 +1,20 @@
-
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from app.routes.routes import google_bp  # ✅ Corrected import
 from datetime import timedelta
-
-#---------------------------------------------------------------------------------------------------
+from app.extensions.mail import mail
+from app.routes.routes import routes  # ✅ Safe here
+from flask import Blueprint
+#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 # Load environment variables from .env
+#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 load_dotenv()
-#---------------------------------------------------------------------------------------------------
-
+#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.getenv("SECRET_KEY", "your_random_secret_key")  # Default value for development
-    app.register_blueprint(google_bp)
+    app.register_blueprint(routes)
+    app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
+    app.secret_key = os.getenv("SECRET_KEY", "asdasdasdasdasdasd")  # Default value for development
 
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")
@@ -34,6 +35,22 @@ def create_app():
             # SESSION_COOKIE_DOMAIN='.yourdomain.com',  # Optional for prod with custom domain
             PERMANENT_SESSION_LIFETIME=timedelta(days=31),
         )
+    # Set session expiration time (ensure it's in the create_app function)
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+            # Flask-Mail config using environment variables
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-    #---------------------------------------------------------------------------------------------------
+    app.config['UPLOAD_FOLDER'] = 'static/background/'
+    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+    
+    
+        # Initialize Flask-Mail
+    mail.init_app(app)
+    #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
     return app
