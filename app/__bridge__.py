@@ -17,6 +17,12 @@ def create_app():
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")
 
+    # Set the redirect URI based on the environment (local or production)
+    if env == "development":
+        app.config['GOOGLE_OAUTH_REDIRECT_URI'] = 'http://127.0.0.1:5000/callback'
+    else:
+        app.config['GOOGLE_OAUTH_REDIRECT_URI'] = 'https://tunnercasinoonline.onrender.com/callback'
+
     # Session cookie configuration
     if env == "development":
         app.config.update(
