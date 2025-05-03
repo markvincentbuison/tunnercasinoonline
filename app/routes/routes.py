@@ -40,7 +40,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 def get_redirect_uri():
     if IS_PRODUCTION:
         return "https://127.0.0.1:5000/callback"
-    return "https://google-test-signin.onrender.com/callback"
+    return "https://tunnercasinoonline.onrender.com/callback"
 #--------------------------------------------------------------------------------------------------
 # Login required decorator to ensure user is logged in
 def login_is_required(f):
@@ -56,7 +56,7 @@ from flask import make_response
 
 @google_bp.route("/login/google")
 def login():
-    deployed_url = "google-test-signin.onrender.com"
+    deployed_url = "tunnercasinoonline.onrender.com"
 
     # Avoid redirect loop on non-allowed hosts
     if deployed_url not in request.host and "127.0.0.1" not in request.host and "192.168." not in request.host:
