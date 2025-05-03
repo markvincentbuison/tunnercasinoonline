@@ -102,7 +102,7 @@ def callback():
     print(f"Authorization Response URL: {request.url}")
 
     # ✅ Insert ALLOWED_HOSTS check here
-    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "google-test-signin.onrender.com"]
+    ALLOWED_HOSTS = ["127.0.0.1", "192.168.", "tunnercasinoonline.onrender.com"]
     if not any(host in request.host for host in ALLOWED_HOSTS):
         print("Unauthorized callback host detected. Clearing session and blocking.")
         session.clear()
@@ -170,5 +170,4 @@ def dashboard():
     picture = session.get("picture")
 
     return render_template("user_dashboard.html", name=name, email=email, picture=picture)
-
 #--------------------------------------------------------------------------------------------------
