@@ -381,6 +381,15 @@ def manual_login():
         cursor.close()
         conn.close()
 #=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=============================================== SIGN UP ===============================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
 # Signup route
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import bcrypt
@@ -448,75 +457,159 @@ def signup():
             conn.close()
     return redirect(url_for('routes.index'))
 #======================================================================================================================
+#======================================================================================================================
+#======================================================================================================================
+#======================================================================================================================
+#======================================================================================================================
 from flask import render_template, flash, redirect, url_for
 from datetime import datetime
 from app.utils import confirm_token
-from app.routes.routes import get_db_connection  # or from your actual import path
+from app.routes.routes import get_db_connection  # Adjust the import path if needed
+from app.utils import confirm_token, generate_token, send_email
+from flask import Blueprint, request, redirect, url_for, flash
 
 @routes.route('/verify-email/<token>')
 def verify_email(token):
-    email = confirm_token(token)
-    if not email:
-        flash("Invalid or expired verification link.", "danger")
-        return redirect(url_for('routes.index'))
-
-    conn = None
-    cursor = None
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Check if user exists and token not expired
+        # Decode the token and retrieve the email address
+        print(f"Verifying token: {token}")
+        email = confirm_token(token)  # Assuming confirm_token() decodes the token
+
+        # Check if the token is valid
+        if not email:
+            print(f"Invalid token: {token}")
+            flash('Invalid or expired token.', 'error')
+            return redirect(url_for('routes.index'))  # Redirect to home if invalid token
+
+        print(f"Decoded email from token: {email}")
+
+        # Connect to the database
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Check if user exists in the database and if they're unverified
+        print(f"Checking user in database with email: {email}")
         cursor.execute("""
-            SELECT id, verification_token_expiry, is_verified 
-            FROM users 
-            WHERE email_address = %s AND is_verified = FALSE
+            SELECT id, verification_token_expiry, is_verified
+            FROM users
+            WHERE email_address = %s
         """, (email,))
         user = cursor.fetchone()
 
-        if not user:
-            flash("Email already verified or user does not exist.", "warning")
-            return redirect(url_for('routes.index'))
+        if user:
+            user_id, token_expiry, is_verified = user
+            print(f"User found: {user_id}, Expiry: {token_expiry}, Verified: {is_verified}")
 
-        # Check token expiry
-        token_expiry = user[1]
-        if datetime.utcnow() > token_expiry:
-            flash("Verification link has expired. Please request a new one.", "danger")
-            return redirect(url_for('routes.index'))
+            # Check if the token has expired
+            if token_expiry and token_expiry < datetime.utcnow():
+                print(f"Token has expired: {token_expiry}")
+                flash('Token has expired. Please request a new verification email.', 'error')
+                return redirect(url_for('routes.index'))  # Redirect if token expired
 
-        # Update user as verified
-        cursor.execute("""
-            UPDATE users 
-            SET is_verified = TRUE, verification_token = NULL, verification_token_expiry = NULL 
-            WHERE email_address = %s
-        """, (email,))
-        conn.commit()
+            if is_verified:
+                print("User already verified.")
+                flash('Your email is already verified!', 'success')
+                return redirect(url_for('routes.reset_dashboard'))  # Redirect to reset dashboard if already verified
 
-        flash("Email verified successfully! You can now log in.", "success")
-        return redirect(url_for('routes.index'))  # Redirect to login
+            # Update the user's status to verified
+            cursor.execute("""
+                UPDATE users
+                SET is_verified = TRUE
+                WHERE email_address = %s
+            """, (email,))
+            connection.commit()
+
+            print(f"User {email} verified successfully.")
+            flash('Your email has been verified. You can now log in.', 'success')
+            return redirect(url_for('routes.reset_dashboard'))  # Redirect to reset dashboard after success
+
+        else:
+            print(f"User not found with email: {email}")
+            flash('User not found.', 'error')
+            return redirect(url_for('routes.index'))  # Redirect to home if user not found
 
     except Exception as e:
-        print(f"Verification error: {e}")
-        flash("Something went wrong during verification.", "danger")
-        return redirect(url_for('routes.index'))
+        print(f"Error in verification: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        flash('An error occurred during verification. Please try again later.', 'error')
+        return redirect(url_for('routes.index'))  # General error handling
 
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+#=======================================================================================================================
+@routes.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    print(f"Received token: {token}")  # Debugging
+    email = confirm_token(token)
+    if not email:
+        print(f"Email after token confirmation: {email}")  # Debugging
+        flash("Invalid or expired verification link.", "danger")
+        return redirect(url_for('routes.index'))  # Redirect if token is invalid or expired
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Check if passwords match
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return redirect(url_for('routes.reset_password', token=token))  # Stay on the page if passwords don't match
+
+        # Hash the new password before saving it to the database
+        hashed_password = hash_password(new_password)
+
+        # Proceed to update the password in the database
+        conn = None
+        cursor = None
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Update the password for the user
+            cursor.execute("""
+                UPDATE users
+                SET password = %s
+                WHERE email_address = %s
+            """, (hashed_password, email))
+            conn.commit()
+
+            flash("Your password has been reset successfully!", "success")
+            return redirect(url_for('routes.index'))  # Redirect to login or home page
+
+        except Exception as e:
+            print(f"Password reset error: {e}")
+            flash("Something went wrong while resetting the password.", "danger")
+            return redirect(url_for('routes.index'))  # Redirect to home if error occurs
+        
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    # Render the reset password page with the token to allow password reset
+    return render_template('reset_password.html', token=token)
 
 #=======================================================================================================================
 
 
-#=== FOR SIGN UP FOR SENDING A VERIFICATION TO EMAIL====================================================================
 
-#=======================================================================================================================
-#=======================================================================================================================
-# Generate a verification token for email
-    
-#=== FOR SIGN UP FOR SENDING A VERIFICATION TO EMAIL====================================================================
-# Route to verify the email and token
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #=======================================================================================================================
 #=======================================================================================================================

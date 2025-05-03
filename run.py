@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import os
 from app.__bridge__ import create_app
+import sys
+sys.stdout.reconfigure(encoding='utf-8')  # Ensures UTF-8 output for emojis/symbols
 
 # Load environment variables from .env file
 load_dotenv()

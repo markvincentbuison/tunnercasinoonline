@@ -22,6 +22,8 @@ def get_db_connection():
         print("Failed with DATABASE_URL, falling back to individual variables. Error:", e)
         try:
             print("Attempting to connect using individual parameters...")
+            # For debugging, avoid printing the password here
+            print(f"Connecting to database at host: {os.getenv('DB_HOST')}, port: {os.getenv('DB_PORT')}, database: {os.getenv('DB_NAME')}")
             return connect(
                 host=os.getenv("DB_HOST"),
                 port=os.getenv("DB_PORT"),

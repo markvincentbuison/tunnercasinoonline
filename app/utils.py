@@ -28,7 +28,7 @@ def send_email(subject, body, recipient_email):
 
 # =============================================================================================================
 def send_verification_email(email, token, username):
-    subject = "Verify Your Email - TunNer"
+    subject = "Verify Your Email"
     verification_link = f"https://tunnercasinoonline.onrender.com/verify-email/{token}"
 
     body = f"""
@@ -63,7 +63,6 @@ TunNer Team
 """
     send_email(subject, body, email)
 # =============================================================================================================
-
 def validate_username(username):
     """Validates the username based on length and allowed characters."""
     if len(username) < 3 or len(username) > 11:
@@ -71,54 +70,55 @@ def validate_username(username):
     if not re.match("^[A-Za-z0-9]*$", username):
         return "Username can only contain letters and numbers."
     return None
-
-
+#=======================================================================================================================
 def hash_password(password):
     """Hashes the password using bcrypt and returns the hashed password."""
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode('utf-8'), salt)
 
-
+#=======================================================================================================================
 def verify_password(password, hashed_password):
     """Verifies the provided password against the stored hashed password."""
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
 
-
+#=======================================================================================================================
 def get_user_by_email(email):
     """Fetches the user from the database by email."""
     # Replace with actual DB query to get the user by email.
     pass
-
+#=======================================================================================================================
 def create_user(name, email, hashed_password, verified=False):
     """Creates a new user in the database."""
     # Replace with actual DB logic to create the user.
     pass
-
+#=======================================================================================================================
 def verify_user_by_token(token):
     """Verifies the token for email verification or reset."""
     # Implement actual token verification logic.
     pass
-
+#=======================================================================================================================
 def update_user_verification_status(email):
     """Updates the user’s verification status in the database."""
     # Implement logic to update the user's verified status.
     pass
+#=======================================================================================================================
 
 def update_user_password(email, hashed_password):
     """Updates the user’s password in the database."""
     # Implement logic to update the user's password.
     pass
-
-
-
+#=======================================================================================================================
 def get_serializer():
     return URLSafeTimedSerializer(routes.config['SECRET_KEY'])
-
+#=======================================================================================================================
 def confirm_token(token, expiration=3600):
     serializer = get_serializer()
     try:
+        print(f"Attempting to confirm token: {token}")  # Debugging
         email = serializer.loads(token, salt='email-confirm', max_age=expiration)
+        print(f"Token decoded, email: {email}")  # Debugging
     except Exception as e:
-        print(f"Token confirmation error: {e}")
+        print(f"Token confirmation error: {e}")  # Error logging
         return None
     return email
+#=======================================================================================================================
