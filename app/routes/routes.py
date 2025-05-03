@@ -25,6 +25,10 @@ import psycopg2.extras
 from flask import current_app as app
 from itsdangerous import URLSafeTimedSerializer
 from flask import render_template, request, redirect, url_for, flash, session
+# =====this below for for render connecting 24/7=====================
+import threading
+import time
+import requests
 # =====Upload Picture============================================================================================================
 from flask import Flask, request, redirect, url_for, session, render_template
 import os
@@ -186,7 +190,19 @@ def callback():
     except Exception as e:
         print(f"Error during Google login callback: {e}")
         abort(500, f"OAuth callback failed: {e}")
+#======================================================================================================================
+# ===================== 24/7 Render Keep-Alive ==========================
+def ping_self():
+    while True:
+        try:
+            time.sleep(300)  # every 20 minutes
+            requests.get("https://tunnercasinoonline.onrender.com/")
+        except Exception as e:
+            print(f"[Keep-Alive Ping Error] {e}")
 
+keep_alive_thread = threading.Thread(target=ping_self)
+keep_alive_thread.daemon = True
+keep_alive_thread.start()
 #--------------------------------------------------------------------------------------------------
 # Logout route to clear the session
 @routes.route("/logout")
