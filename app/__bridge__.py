@@ -19,12 +19,11 @@ def create_app():
     google_bp = make_google_blueprint(
             client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
             client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
-            redirect_to="dashboard_google_signin"
+            redirect_url=os.getenv("REDIRECT_URI")
             
     )
-    
     # Register the Google OAuth blueprint with Flask
-    app.register_blueprint(google_bp, url_prefix="/login")
+    app.register_blueprint(google_bp, url_prefix="/login_google")
 
     app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
     app.secret_key = os.getenv("SECRET_KEY", "your_random_secret_key")  # Default value for development
