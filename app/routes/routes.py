@@ -68,6 +68,7 @@ def get_redirect_uri():
 #--------------------------------------------------------------------------------------------------
 # Login required decorator to ensure user is logged in
 def login_is_required(f):
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "google_id" not in session:
@@ -185,6 +186,7 @@ def callback():
     except Exception as e:
         print(f"Error during Google login callback: {e}")
         abort(500, f"OAuth callback failed: {e}")
+
 #--------------------------------------------------------------------------------------------------
 # Logout route to clear the session
 @routes.route("/logout")
