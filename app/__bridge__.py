@@ -1,32 +1,18 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
+from app.routes.routes import google_bp  # ✅ Corrected import
 from datetime import timedelta
-from app.extensions.mail import mail
-from app.routes.routes import routes  # ✅ Safe here
-from flask_dance.contrib.google import make_google_blueprint  # Import the Google blueprint
 
-#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#---------------------------------------------------------------------------------------------------
 # Load environment variables from .env
-#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 load_dotenv()
-#───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#---------------------------------------------------------------------------------------------------
+
 def create_app():
     app = Flask(__name__)
-    app.register_blueprint(routes)
-    USE_NGROK = os.environ.get("USE_NGROK") == "True"
-    # Create the Google OAuth blueprint
-    google_bp = make_google_blueprint(
-            client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
-            client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
-            redirect_url=os.getenv("REDIRECT_URI")
-            
-    )
-    # Register the Google OAuth blueprint with Flask
-    app.register_blueprint(google_bp, url_prefix="/login_google")
-
-    app.config['SECURITY_PASSWORD_SALT'] = 'your_unique_salt_value'
     app.secret_key = os.getenv("SECRET_KEY", "your_random_secret_key")  # Default value for development
+    app.register_blueprint(google_bp)
 
     # Detect environment (set FLASK_ENV=development in .env if needed)
     env = os.getenv("FLASK_ENV", "production")
@@ -47,24 +33,6 @@ def create_app():
             # SESSION_COOKIE_DOMAIN='.yourdomain.com',  # Optional for prod with custom domain
             PERMANENT_SESSION_LIFETIME=timedelta(days=31),
         )
-    # Set session expiration time (ensure it's in the create_app function)
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-    
-    # Flask-Mail config using environment variables
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
-    app.config['UPLOAD_FOLDER'] = 'static/background/'
-    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-# Force HTTPS for production
-    if app.env == 'production':
-        app.config['PREFERRED_URL_SCHEME'] = 'https'
-    # Initialize Flask-Mail
-    mail.init_app(app)
-    #───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
+    #---------------------------------------------------------------------------------------------------
     return app
