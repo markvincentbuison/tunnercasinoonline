@@ -501,7 +501,6 @@ def verify_email(token):
         conn.close()
     
     return redirect(url_for('routes.index'))  # Redirect to the login page if any issues occur
-
 #=======EMAIL VERFICATION FOR SIGN UP===================================================================================
 @routes.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -526,7 +525,6 @@ def reset_password(token):
 
         # Hash the new password before saving it to the database
         hashed_password = hash_password(new_password)
-
         # Proceed to update the password in the database
         conn = None
         cursor = None
