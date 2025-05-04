@@ -149,6 +149,65 @@
     </div>
 </div>
 
+<!-- Higher or Lower -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Higher or Lower</h5>
+            <p>Current Number: <span id="current-number">5</span></p>
+            <button class="btn btn-success" onclick="guessHigher()">Higher</button>
+            <button class="btn btn-danger" onclick="guessLower()">Lower</button>
+            <p id="hl-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Spin the Wheel -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Spin the Wheel</h5>
+            <button class="btn btn-warning" onclick="spinWheel()">Spin</button>
+            <p id="wheel-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Tic Tac Toe -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Tic Tac Toe</h5>
+            <button class="btn btn-dark" onclick="startTicTacToe()">Play</button>
+            <p class="mt-2">Open game in modal or new section</p>
+        </div>
+    </div>
+</div>
+
+<!-- Blackjack (Simplified) -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Blackjack</h5>
+            <button class="btn btn-secondary" onclick="startBlackjack()">Start Game</button>
+            <p id="blackjack-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Memory Match (Mini Version) -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Memory Match</h5>
+            <button class="btn btn-primary" onclick="startMemoryGame()">Play</button>
+            <p id="memory-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+
+
                     </div>
                 </div>
             </div>
@@ -306,7 +365,25 @@
             const answer = responses[Math.floor(Math.random() * responses.length)];
             document.getElementById('magic-result').innerText = answer;
         }
-        
+        let currentNumber = Math.floor(Math.random() * 100) + 1;
+document.getElementById("current-number").innerText = currentNumber;
+
+        function guessHigher() {
+            const newNumber = Math.floor(Math.random() * 100) + 1;
+            const result = newNumber > currentNumber ? "✅ Correct!" : "❌ Wrong!";
+            document.getElementById("hl-result").innerText = `New number: ${newNumber}. ${result}`;
+            currentNumber = newNumber;
+            document.getElementById("current-number").innerText = currentNumber;
+        }
+
+        function guessLower() {
+            const newNumber = Math.floor(Math.random() * 100) + 1;
+            const result = newNumber < currentNumber ? "✅ Correct!" : "❌ Wrong!";
+            document.getElementById("hl-result").innerText = `New number: ${newNumber}. ${result}`;
+            currentNumber = newNumber;
+            document.getElementById("current-number").innerText = currentNumber;
+        }
+
     </script>
     
 
