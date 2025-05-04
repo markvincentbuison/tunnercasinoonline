@@ -7,11 +7,19 @@ from flask import url_for
 from app.extensions.mail import mail
 import secrets
 from app.routes.postgresql import get_db_connection
+import psycopg2
 
 # ============================================
 # Helper Functions
 # ============================================
-
+def get_db_connection():
+    return psycopg2.connect(
+        host="dpg-d00ihffgi27c73bb4afg-a.virginia-postgres.render.com",
+        database="downloadable_app",
+        user="root",
+        password="rVIIDKOozMHH8LPqHT0dC3EfPxwFN2nP"
+    )
+    
 def generate_token(length=32):
     """Generates a secure random token of specified length."""
     return secrets.token_urlsafe(length)

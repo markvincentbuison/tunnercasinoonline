@@ -492,6 +492,7 @@ def verify_email(token):
 #======= FORGOT PASSWORD ===============================================================================================
 #======= FOR SENDING AN EMAIL VERFICATION FOR FORGOT PASSWORD===================================================================================
 #============= FORGOT PASSWORD PANEL BELOW =============================================================================
+# ========== Forgot Password ==========
 @routes.route('/forgot-password', methods=['POST'])
 def forgot_password():
     email = request.form.get('forgot_email')
@@ -501,8 +502,9 @@ def forgot_password():
 
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
     try:
-        cursor.execute("SELECT username FROM users WHERE email_address=%s", (email,))
+        cursor.execute("SELECT username FROM users WHERE email_address = %s", (email,))
         user = cursor.fetchone()
         print("Queried email:", email)
         print("User result:", user)
@@ -513,7 +515,7 @@ def forgot_password():
             expiry = datetime.utcnow() + timedelta(hours=1)
 
             cursor.execute(
-                "UPDATE users SET reset_token=%s, reset_token_expiry=%s WHERE email_address=%s",
+                "UPDATE users SET reset_token = %s, reset_token_expiry = %s WHERE email_address = %s",
                 (token, expiry, email)
             )
             conn.commit()
@@ -533,22 +535,27 @@ def forgot_password():
 
     return redirect(url_for('routes.index'))
 
-#=======================================================================================================================
+
+# ========== Reset Password ==========
 @routes.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     try:
-        # Validate token and check expiry
-        cursor.execute("SELECT email_address, reset_token_expiry FROM users WHERE reset_token=%s", (token,))
+        cursor.execute("SELECT email_address, reset_token_expiry FROM users WHERE reset_token = %s", (token,))
         result = cursor.fetchone()
 
         if not result:
             flash("Invalid or expired token.", "danger")
             return redirect(url_for('routes.index'))
 
-        email, expiry = result
+        email = result['email_address']
+        expiry = result['reset_token_expiry']
+
+        if isinstance(expiry, str):
+            expiry = datetime.strptime(expiry, "%Y-%m-%d %H:%M:%S.%f")
+
         if datetime.utcnow() > expiry:
             flash("Token has expired.", "danger")
             return redirect(url_for('routes.index'))
@@ -562,7 +569,10 @@ def reset_password(token):
                 return redirect(url_for('routes.reset_password', token=token))
 
             hashed_pw = hash_password(password)
-            cursor.execute("UPDATE users SET password=%s, reset_token=NULL, reset_token_expiry=NULL WHERE email_address=%s", (hashed_pw, email))
+            cursor.execute(
+                "UPDATE users SET password = %s, reset_token = NULL, reset_token_expiry = NULL WHERE email_address = %s",
+                (hashed_pw, email)
+            )
             conn.commit()
 
             flash("Password has been reset successfully.", "success")
