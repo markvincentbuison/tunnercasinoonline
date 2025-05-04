@@ -462,7 +462,6 @@ def verify_email(token):
     try:
         cursor.execute("SELECT * FROM users WHERE verification_token=%s", (token,))
         user = cursor.fetchone()
-
         if user:
             # Assuming the 'user_email' is the second column in your query
             email_address = user['email_address']  # or whatever your actual column name is
@@ -485,67 +484,9 @@ def verify_email(token):
     finally:
         cursor.close()
         conn.close()
-    
     return redirect(url_for('routes.index'))  # Redirect to the login page if any issues occur
-
-#=======EMAIL VERFICATION FOR SIGN UP===================================================================================
-@routes.route('/reset-password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    print(f"Received token: {token}")  # Debugging
-    email = confirm_token(token)
-    
-    # Debugging to check token validation
-    print(f"Email after token confirmation: {email}")  # Debugging
-    
-    if not email:
-        flash("Invalid or expired verification link.", "danger")
-        return redirect(url_for('routes.index'))  # Redirect if token is invalid or expired
-
-    if request.method == 'POST':
-        new_password = request.form['new_password']
-        confirm_password = request.form['confirm_password']
-
-        # Check if passwords match
-        if new_password != confirm_password:
-            flash("Passwords do not match.", "danger")
-            return redirect(url_for('routes.reset_password', token=token))  # Stay on the page if passwords don't match
-
-        # Hash the new password before saving it to the database
-        hashed_password = hash_password(new_password)
-
-        # Proceed to update the password in the database
-        conn = None
-        cursor = None
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            # Debugging SQL execution
-            print(f"Executing query to update password for {email}")
-
-            # Update the password for the user
-            cursor.execute("""
-                UPDATE users
-                SET password = %s
-                WHERE email_address = %s
-            """, (hashed_password, email))
-            conn.commit()
-
-            flash("Your password has been reset successfully!", "success")
-            return redirect(url_for('routes.index'))  # Redirect to login or home page
-
-        except Exception as e:
-            print(f"Password reset error: {e}")
-            flash("Something went wrong while resetting the password.", "danger")
-            return redirect(url_for('routes.index'))  # Redirect to home if error occurs
-        
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-    # Render the reset password page with the token to allow password reset
-    return render_template('reset_password.html', token=token)
-
 #=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#======= FORGOT PASSWORD ===============================================================================================
