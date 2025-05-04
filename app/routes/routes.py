@@ -458,7 +458,7 @@ def signup():
     return redirect(url_for('routes.index'))
 #======================================================================================================================
 #======================================================================================================================
-#======================================================================================================================
+#========EMAIL VERFICATION FOR SIGN UP=================================================================================
 #======================================================================================================================
 #======================================================================================================================
 from flask import render_template, flash, redirect, url_for
@@ -476,15 +476,19 @@ def verify_email(token):
     try:
         cursor.execute("SELECT * FROM users WHERE verification_token=%s", (token,))
         user = cursor.fetchone()
+
         if user:
+            # Assuming the 'user_email' is the second column in your query
+            email_address = user['email_address']  # or whatever your actual column name is
+
             cursor.execute("""
                 UPDATE users
                 SET is_verified=TRUE, verification_token=NULL
                 WHERE verification_token=%s
             """, (token,))
             conn.commit()
-            flash("Email verified successfully.", 'success')
-            return redirect(url_for('routes.reset_dashboard'))
+            flash(f"Your Email ({email_address}) is now verified successfully!", 'success')
+            return redirect(url_for('routes.index'))  # Redirect to the login page
         else:
             flash("Invalid or expired verification link.", 'danger')
     except Exception as e:
@@ -495,9 +499,10 @@ def verify_email(token):
     finally:
         cursor.close()
         conn.close()
-    return redirect(url_for('routes.index'))
+    
+    return redirect(url_for('routes.index'))  # Redirect to the login page if any issues occur
 
-#=======================================================================================================================
+#=======EMAIL VERFICATION FOR SIGN UP===================================================================================
 @routes.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     print(f"Received token: {token}")  # Debugging
@@ -556,12 +561,46 @@ def reset_password(token):
 
     # Render the reset password page with the token to allow password reset
     return render_template('reset_password.html', token=token)
-
 #=======================================================================================================================
-
-
-
-
+#=======================================================================================================================
+#============= FORGOT PASSWORD PANEL BELOW =============================================================================
+#=======================================================================================================================
+@routes.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.form.get('forgot_email')
+    if not email:
+        flash('Please enter your email address.', 'warning')
+        return redirect(url_for('routes.index'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM users WHERE email_address=%s", (email,))
+        user = cursor.fetchone()
+        if user:
+            reset_token = generate_token()
+            reset_expiry = datetime.utcnow() + timedelta(hours=1)
+            username = user[1]  # Adjust this index if 'username' is at a different position
+            cursor.execute(
+                "UPDATE users SET reset_token=%s, reset_token_expiry=%s WHERE email_address=%s",
+                (reset_token, reset_expiry, email)
+            )
+            conn.commit()
+            send_reset_email(email, reset_token, username)
+            flash('A password reset link has been sent to your email.', 'info')
+        else:
+            flash('Email not found. Please try again.', 'danger')
+    except Exception as e:
+        print(f"Error during password reset request: {e}")
+        conn.rollback()
+        flash('An error occurred while processing your request.', 'danger')
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('routes.index'))
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
+#=======================================================================================================================
 
 
 
