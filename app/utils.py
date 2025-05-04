@@ -6,6 +6,7 @@ from flask_mail import Message
 from flask import url_for
 from app.extensions.mail import mail
 import secrets
+from app.routes.postgresql import get_db_connection
 
 # ============================================
 # Helper Functions
@@ -48,8 +49,9 @@ Cheers,
     send_email(subject, body, email)
 # =============================================================================================================
 def send_reset_email(email, token, username):
-    """Sends a password reset email with a reset token."""
     reset_link = url_for('routes.reset_password', token=token, _external=True)
+    print(f"[DEBUG] Send reset link to {email}")
+    print(f"Reset URL: {reset_link}")
     subject = "Password Reset Request"
     body = f"""Hi {username},
 
@@ -84,9 +86,13 @@ def verify_password(password, hashed_password):
 
 #=======================================================================================================================
 def get_user_by_email(email):
-    """Fetches the user from the database by email."""
-    # Replace with actual DB query to get the user by email.
-    pass
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user
 #=======================================================================================================================
 def create_user(name, email, hashed_password, verified=False):
     """Creates a new user in the database."""
@@ -109,8 +115,10 @@ def update_user_password(email, hashed_password):
     # Implement logic to update the user's password.
     pass
 #=======================================================================================================================
+from flask import current_app
+from itsdangerous import URLSafeTimedSerializer
 def get_serializer():
-    return URLSafeTimedSerializer(routes.config['SECRET_KEY'])
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
 #=======================================================================================================================
 def confirm_token(token, expiration=3600):
     serializer = get_serializer()

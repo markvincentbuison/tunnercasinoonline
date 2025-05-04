@@ -490,3 +490,103 @@ def verify_email(token):
 #=======================================================================================================================
 #=======================================================================================================================
 #======= FORGOT PASSWORD ===============================================================================================
+#======= FOR SENDING AN EMAIL VERFICATION FOR FORGOT PASSWORD===================================================================================
+#============= FORGOT PASSWORD PANEL BELOW =============================================================================
+@routes.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.form.get('forgot_email')
+    if not email:
+        flash('Please enter your email address.', 'warning')
+        return redirect(url_for('routes.index'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        cursor.execute("SELECT username FROM users WHERE email_address=%s", (email,))
+        user = cursor.fetchone()
+        print("Queried email:", email)
+        print("User result:", user)
+
+        if user:
+            username = user['username']
+            token = generate_token()
+            expiry = datetime.utcnow() + timedelta(hours=1)
+
+            cursor.execute(
+                "UPDATE users SET reset_token=%s, reset_token_expiry=%s WHERE email_address=%s",
+                (token, expiry, email)
+            )
+            conn.commit()
+
+            send_reset_email(email, token, username)
+            flash("A reset link has been sent to your email.", "info")
+        else:
+            flash("Email not found.", "danger")
+
+    except Exception as e:
+        print("Forgot password error:", e)
+        conn.rollback()
+        flash("An error occurred while processing your request.", "danger")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('routes.index'))
+
+#=======================================================================================================================
+@routes.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Validate token and check expiry
+        cursor.execute("SELECT email_address, reset_token_expiry FROM users WHERE reset_token=%s", (token,))
+        result = cursor.fetchone()
+
+        if not result:
+            flash("Invalid or expired token.", "danger")
+            return redirect(url_for('routes.index'))
+
+        email, expiry = result
+        if datetime.utcnow() > expiry:
+            flash("Token has expired.", "danger")
+            return redirect(url_for('routes.index'))
+
+        if request.method == 'POST':
+            password = request.form['new_password']
+            confirm_password = request.form['confirm_password']
+
+            if password != confirm_password:
+                flash("Passwords do not match.", "warning")
+                return redirect(url_for('routes.reset_password', token=token))
+
+            hashed_pw = hash_password(password)
+            cursor.execute("UPDATE users SET password=%s, reset_token=NULL, reset_token_expiry=NULL WHERE email_address=%s", (hashed_pw, email))
+            conn.commit()
+
+            flash("Password has been reset successfully.", "success")
+            return redirect(url_for('routes.index'))
+
+    except Exception as e:
+        print("Reset password error:", e)
+        conn.rollback()
+        flash("An error occurred.", "danger")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return render_template('reset_password.html', token=token)
+
+
+
+
+
+
+
+
+
+
+
+
+
