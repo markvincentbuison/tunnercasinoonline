@@ -29,7 +29,8 @@ def send_email(subject, body, recipient_email):
 # =============================================================================================================
 def send_verification_email(email, token, username):
     subject = "Verify Your Email"
-    verification_link = f"https://tunnercasinoonline.onrender.com/verify-email/{token}"
+    #verification_link = f"https://tunnercasinoonline.onrender.com/verify-email/{token}"
+    verification_link = url_for('routes.verify_email', token=token, _external=True)
 
     body = f"""
 Hi {username},

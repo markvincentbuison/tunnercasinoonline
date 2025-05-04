@@ -471,69 +471,31 @@ from itsdangerous import URLSafeTimedSerializer
 
 @routes.route('/verify-email/<token>')
 def verify_email(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
     try:
-        # Decode the token and retrieve the email address
-        print(f"Verifying token: {token}")
-        email = confirm_token(token)  # Assuming confirm_token() decodes the token
-
-        # Check if the token is valid
-        if not email:
-            print(f"Invalid token: {token}")
-            flash('Invalid or expired token.', 'error')
-            return redirect(url_for('routes.index'))  # Redirect to home if invalid token
-
-        print(f"Decoded email from token: {email}")
-
-        # Connect to the database
-        connection = get_db_connection()
-        cursor = connection.cursor()
-
-        # Check if user exists in the database and if they're unverified
-        print(f"Checking user in database with email: {email}")
-        cursor.execute("""
-            SELECT id, verification_token_expiry, is_verified
-            FROM users
-            WHERE email_address = %s
-        """, (email,))
+        cursor.execute("SELECT * FROM users WHERE verification_token=%s", (token,))
         user = cursor.fetchone()
-
         if user:
-            user_id, token_expiry, is_verified = user
-            print(f"User found: {user_id}, Expiry: {token_expiry}, Verified: {is_verified}")
-
-            # Check if the token has expired
-            if token_expiry and token_expiry < datetime.utcnow():
-                print(f"Token has expired: {token_expiry}")
-                flash('Token has expired. Please request a new verification email.', 'error')
-                return redirect(url_for('routes.index'))  # Redirect if token expired
-
-            if is_verified:
-                print("User already verified.")
-                flash('Your email is already verified!', 'success')
-                return redirect(url_for('routes.reset_dashboard'))  # Redirect to reset dashboard if already verified
-
-            # Update the user's status to verified
             cursor.execute("""
                 UPDATE users
-                SET is_verified = TRUE
-                WHERE email_address = %s
-            """, (email,))
-            connection.commit()
-
-            print(f"User {email} verified successfully.")
-            flash('Your email has been verified. You can now log in.', 'success')
-            return redirect(url_for('routes.reset_dashboard'))  # Redirect to reset dashboard after success
-
+                SET is_verified=TRUE, verification_token=NULL
+                WHERE verification_token=%s
+            """, (token,))
+            conn.commit()
+            flash("Email verified successfully.", 'success')
+            return redirect(url_for('routes.reset_dashboard'))
         else:
-            print(f"User not found with email: {email}")
-            flash('User not found.', 'error')
-            return redirect(url_for('routes.index'))  # Redirect to home if user not found
-
+            flash("Invalid or expired verification link.", 'danger')
     except Exception as e:
-        print(f"Error in verification: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
-        flash('An error occurred during verification. Please try again later.', 'error')
-        return redirect(url_for('routes.index'))  # General error handling
+        print(f"Error verifying email: {e}")
+        import traceback; traceback.print_exc()
+        conn.rollback()
+        flash("An error occurred while verifying your email.", 'danger')
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('routes.index'))
 
 #=======================================================================================================================
 @routes.route('/reset-password/<token>', methods=['GET', 'POST'])
