@@ -212,18 +212,540 @@
                 </div>
             </div>
             
+            
+
+
+
+
+
+
+
+
+
             <div id="profile" class="content-box hidden">
-                <h3>Profile</h3>
-                <p>This is your profile section. Update your personal information here.</p>
+                <h3>Profile Timeline</h3>
+                <p>Stay connected with your latest updates, posts, and comments.</p>
+            
+                <!-- Display Online Status -->
+                <div id="online-status" class="mb-3">
+                    <h5>Status: <span id="status-text">Online</span></h5>
+                    <small>Last active: <span id="last-active">: 5 minutes ago</span></small>
+                </div>
+            
+                <!-- Create New Post Section -->
+                <div id="create-post" class="mt-4">
+                    <h5>Create New Post</h5>
+                    <form id="post-form">
+                        <div class="form-group">
+                            <textarea class="form-control" id="post-text" rows="3" placeholder="What's on your mind?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </form>
+                </div>
+            
+                <!-- User's Timeline -->
+                <div id="timeline" class="timeline mt-4">
+                    <h4>Your Timeline</h4>
+                    <div id="timeline-posts">
+                        <!-- Example Post -->
+                        <div class="timeline-item">
+                            <div class="post-header">
+                                <!-- Updated profile image path -->
+                                <img src="{{ url_for('static', filename='background/bp.jpg') }}" alt="Profile" class="post-profile-img">
+                                <strong>John Doe </strong>
+                                <span class="post-time">: 5 minutes ago</span>
+                            </div>
+                            <p class="post-content">Just updated my profile picture!</p>
+                            <div class="post-actions">
+                                <button class="btn btn-light btn-sm like-btn">Like</button>
+                                <button class="btn btn-light btn-sm comment-btn" data-toggle="collapse" data-target="#comment-section-1">Comment</button>
+                            </div>
+                            <div id="comment-section-1" class="collapse">
+                                <div class="comment">
+                                    <strong>Jane Doe</strong>: Great picture!
+                                </div>
+                                <div class="comment">
+                                    <strong>Mark Smith</strong>: Looking good!
+                                </div>
+                                <textarea class="form-control mt-2" id="comment-text-1" placeholder="Write a comment..."></textarea>
+                                <button class="btn btn-light btn-sm mt-2" onclick="addComment(1)">Post Comment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+            
+            <!-- JavaScript to Handle Posts and Comments -->
+            <script>
+                // Handle post creation
+                document.getElementById('post-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const postText = document.getElementById('post-text').value;
+                    if (postText.trim() === "") {
+                        alert('Please write something to post.');
+                        return;
+                    }
+            
+                    // Create a new post
+                    const timeline = document.getElementById('timeline-posts');
+                    const newPost = document.createElement('div');
+                    newPost.classList.add('timeline-item');
+                    newPost.innerHTML = `
+                        <div class="post-header">
+                            <!-- Updated profile image path -->
+                            <img src="{{ url_for('static', filename='background/bp.jpg') }}" alt="Profile" class="post-profile-img">
+                            <strong>John Doe</strong>
+                            <span class="post-time">Just now</span>
+                        </div>
+                        <p class="post-content">${postText}</p>
+                        <div class="post-actions">
+                            <button class="btn btn-light btn-sm like-btn">Like</button>
+                            <button class="btn btn-light btn-sm comment-btn" data-toggle="collapse" data-target="#comment-section-new">Comment</button>
+                        </div>
+                        <div id="comment-section-new" class="collapse">
+                            <textarea class="form-control mt-2" id="comment-text-new" placeholder="Write a comment..."></textarea>
+                            <button class="btn btn-light btn-sm mt-2" onclick="addComment('new')">Post Comment</button>
+                        </div>
+                    `;
+                    timeline.insertBefore(newPost, timeline.firstChild);  // Add post at the top
+                    document.getElementById('post-text').value = "";  // Clear the textarea
+                });
+            
+                // Function to add a comment
+                function addComment(postId) {
+                    const commentText = document.getElementById(`comment-text-${postId}`).value;
+                    if (commentText.trim() === "") {
+                        alert('Please write a comment.');
+                        return;
+                    }
+            
+                    const commentSection = document.getElementById(`comment-section-${postId}`);
+                    const newComment = document.createElement('div');
+                    newComment.classList.add('comment');
+                    newComment.innerHTML = `<strong>John Doe</strong>: ${commentText}`;
+                    commentSection.appendChild(newComment);
+                    document.getElementById(`comment-text-${postId}`).value = "";  // Clear the comment input field
+                }
+            
+                // Simulate profile picture preview
+                function previewProfilePicture(event) {
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        const output = document.getElementById('profile-picture');
+                        output.src = reader.result;
+                    };
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            </script>
+            
+            <!-- Add some simple CSS for the timeline look -->
+            <style>
+                .timeline {
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    padding: 20px;
+                }
+            
+                .timeline-item {
+                    background-color: #ffffff;
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                }
+            
+                .post-header {
+                    display: flex;
+                    align-items: center;
+                }
+            
+                .post-profile-img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                }
+            
+                .post-actions {
+                    margin-top: 10px;
+                }
+            
+                .comment {
+                    margin-top: 10px;
+                    font-size: 14px;
+                }
+            
+                .collapse {
+                    margin-top: 10px;
+                }
+            
+                .like-btn, .comment-btn {
+                    margin-right: 10px;
+                }
+            </style>
+            
+
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+            
+          
+            
+
+
+
+            
             <div id="messages" class="content-box hidden">
                 <h3>Messages</h3>
                 <p>This is your messages section. You can read and send messages here.</p>
+            
+                <!-- Search Bar -->
+                <div class="message-search mb-3">
+                    <input type="text" id="message-search" class="form-control" placeholder="Search messages..." onkeyup="searchMessages()">
+                </div>
+            
+                <!-- Inbox (List of Messages) -->
+                <div id="inbox">
+                    <ul id="message-list" class="list-group">
+                        <!-- Example message item -->
+                        <li class="list-group-item message-item" data-message-id="1">
+                            <strong>John Doe </strong> - Subject of the message 
+                            <span class="text-muted">[2025-05-04]</span>
+                            <button class="btn btn-info btn-sm float-right" onclick="viewMessage(1)">View</button>
+                        </li>
+                        <!-- More message items here -->
+                    </ul>
+                </div>
+            
+                <!-- Message View (for displaying full message content) -->
+                <div id="message-view" class="mt-4 hidden">
+                    <h4>Message from <span id="sender-name">John Doe</span></h4>
+                    <p><strong>Subject:</strong> <span id="message-subject">Subject of the message</span></p>
+                    <div id="message-content">
+                        <p>This is the content of the message. You can reply to this message here.</p>
+                    </div>
+                    <button class="btn btn-warning" onclick="replyMessage()">Reply</button>
+                    <button class="btn btn-danger" onclick="deleteMessage(1)">Delete Message</button>
+                    <button class="btn btn-secondary" onclick="closeMessageView()">Close</button>
+                </div>
+            
+                <!-- Send New Message Modal -->
+                <div class="modal" id="sendMessageModal" tabindex="-1" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="sendMessageModalLabel">Send a New Message</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="send-message-form">
+                                    <div class="form-group">
+                                        <label for="recipient">Recipient</label>
+                                        <input type="text" class="form-control" id="recipient" placeholder="Enter recipient's name or email">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="message-subject">Subject</label>
+                                        <input type="text" class="form-control" id="message-subject" placeholder="Enter subject">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="message-content">Message</label>
+                                        <textarea class="form-control" id="message-content" rows="4" placeholder="Write your message here"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Send Message</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Reply Message Modal -->
+                <div class="modal" id="replyMessageModal" tabindex="-1" aria-labelledby="replyMessageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="replyMessageModalLabel">Reply to Message</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="reply-message-form">
+                                    <div class="form-group">
+                                        <label for="reply-message-content">Your Reply</label>
+                                        <textarea class="form-control" id="reply-message-content" rows="4" placeholder="Write your reply here"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Send Reply</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
             </div>
+            
+            <!-- Script for Message Handling -->
+            <script>
+                // Example message data (can be dynamically loaded from a database)
+                const messages = [
+                    { id: 1, sender: 'John Doe', subject: 'Subject of the message', date: '2025-05-04', content: 'This is the content of the message.' },
+                    { id: 2, sender: 'Jane Smith', subject: 'Another message', date: '2025-05-03', content: 'Content of another message.' }
+                ];
+            
+                // Function to search messages based on user input
+                function searchMessages() {
+                    const searchTerm = document.getElementById('message-search').value.toLowerCase();
+                    const filteredMessages = messages.filter(message => 
+                        message.sender.toLowerCase().includes(searchTerm) || 
+                        message.subject.toLowerCase().includes(searchTerm)
+                    );
+                    displayMessages(filteredMessages);
+                }
+            
+                // Function to display messages in the inbox
+                function displayMessages(messages) {
+                    const messageList = document.getElementById('message-list');
+                    messageList.innerHTML = '';
+                    messages.forEach(message => {
+                        const messageItem = document.createElement('li');
+                        messageItem.classList.add('list-group-item');
+                        messageItem.classList.add('message-item');
+                        messageItem.setAttribute('data-message-id', message.id);
+                        messageItem.innerHTML = `
+                            <strong>${message.sender}</strong> - ${message.subject} 
+                            <span class="text-muted">[${message.date}]</span>
+                            <button class="btn btn-info btn-sm float-right" onclick="viewMessage(${message.id})">View</button>
+                        `;
+                        messageList.appendChild(messageItem);
+                    });
+                }
+            
+                // Function to view a message
+                function viewMessage(messageId) {
+                    const message = messages.find(msg => msg.id === messageId);
+                    document.getElementById('sender-name').textContent = message.sender;
+                    document.getElementById('message-subject').textContent = message.subject;
+                    document.getElementById('message-content').innerHTML = `<p>${message.content}</p>`;
+                    document.getElementById('message-view').classList.remove('hidden');
+                    document.getElementById('inbox').classList.add('hidden');
+                }
+            
+                // Function to close message view
+                function closeMessageView() {
+                    document.getElementById('message-view').classList.add('hidden');
+                    document.getElementById('inbox').classList.remove('hidden');
+                }
+            
+                // Function to delete a message
+                function deleteMessage(messageId) {
+                    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+                    if (messageIndex !== -1) {
+                        messages.splice(messageIndex, 1);
+                        displayMessages(messages);  // Refresh the message list
+                        alert('Message deleted!');
+                    }
+                }
+            
+                // Function to open reply modal
+                function replyMessage() {
+                    $('#replyMessageModal').modal('show');
+                }
+            
+                // Function to handle sending a new message
+                document.getElementById('send-message-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const recipient = document.getElementById('recipient').value;
+                    const subject = document.getElementById('message-subject').value;
+                    const content = document.getElementById('message-content').value;
+                    messages.push({ id: messages.length + 1, sender: 'You', subject, content, date: new Date().toLocaleDateString() });
+                    displayMessages(messages);  // Refresh the message list
+                    $('#sendMessageModal').modal('hide');  // Close the modal
+                });
+            
+                // Initialize message display on page load
+                displayMessages(messages);
+            </script>
+            
+
+
+
+
+
             <div id="settings" class="content-box hidden">
                 <h3>Settings</h3>
                 <p>This is your settings section. Manage your preferences and account settings here.</p>
+            
+                <!-- Change Password Section -->
+                <div id="change-password-section" class="mb-4">
+                    <h4>Change Password</h4>
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <input type="password" class="form-control" id="current-password" placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" class="form-control" id="new-password" placeholder="Enter new password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                    </form>
+                </div>
+            
+                <!-- Profile Picture Section -->
+                <div id="profile-picture-section" class="mb-4">
+                    <h4>Profile Picture</h4>
+                    <img id="profile-picture" src="default-profile.jpg" alt="Profile Picture" class="rounded-circle" width="100" height="100">
+                    <br><br>
+                    <form id="profile-picture-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="profile-picture-upload">Upload New Picture</label>
+                            <input type="file" class="form-control-file" id="profile-picture-upload" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Picture</button>
+                    </form>
+                </div>
+            
+                <!-- Language Preferences Section -->
+                <div id="language-preferences-section" class="mb-4">
+                    <h4>Language Preferences</h4>
+                    <form id="language-preferences-form">
+                        <div class="form-group">
+                            <label for="language-select">Select Language</label>
+                            <select class="form-control" id="language-select">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Language Preference</button>
+                    </form>
+                </div>
+            
+                <!-- Notification Preferences Section -->
+                <div id="notification-preferences-section" class="mb-4">
+                    <h4>Notification Preferences</h4>
+                    <form id="notification-preferences-form">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="email-notifications" checked>
+                            <label class="form-check-label" for="email-notifications">
+                                Receive email notifications
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="push-notifications" checked>
+                            <label class="form-check-label" for="push-notifications">
+                                Receive push notifications
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Notification Preferences</button>
+                    </form>
+                </div>
+            
+                <!-- Account Deactivation Section -->
+                <div id="account-deactivation-section" class="mb-4">
+                    <h4>Account Deactivation</h4>
+                    <p>If you wish to deactivate your account, please proceed below. Please note that this action cannot be undone.</p>
+                    <button class="btn btn-danger" onclick="deactivateAccount()">Deactivate Account</button>
+                </div>
+            
+                <!-- Two-Factor Authentication Section -->
+                <div id="two-factor-auth-section" class="mb-4">
+                    <h4>Two-Factor Authentication (2FA)</h4>
+                    <p>Enable or disable Two-Factor Authentication for additional security.</p>
+                    <button class="btn btn-warning" onclick="toggle2FA()">Enable 2FA</button>
+                    <button class="btn btn-danger" onclick="disable2FA()">Disable 2FA</button>
+                </div>
             </div>
+            
+            <!-- Script for Settings Handling -->
+            <script>
+                // Handle Change Password
+                document.getElementById('change-password-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const currentPassword = document.getElementById('current-password').value;
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+            
+                    if (newPassword !== confirmPassword) {
+                        alert('Passwords do not match!');
+                        return;
+                    }
+            
+                    // Handle password change logic (e.g., send to server)
+                    alert('Password changed successfully!');
+                });
+            
+                // Handle Profile Picture Upload
+                document.getElementById('profile-picture-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const profilePictureUpload = document.getElementById('profile-picture-upload').files[0];
+                    if (profilePictureUpload) {
+                        // Update the profile picture (e.g., send to server)
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('profile-picture').src = e.target.result;
+                            alert('Profile picture updated!');
+                        };
+                        reader.readAsDataURL(profilePictureUpload);
+                    }
+                });
+            
+                // Handle Language Preferences
+                document.getElementById('language-preferences-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const selectedLanguage = document.getElementById('language-select').value;
+                    alert('Language preference saved: ' + selectedLanguage);
+                });
+            
+                // Handle Notification Preferences
+                document.getElementById('notification-preferences-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const emailNotifications = document.getElementById('email-notifications').checked;
+                    const pushNotifications = document.getElementById('push-notifications').checked;
+                    alert('Notification preferences saved: Email - ' + emailNotifications + ', Push - ' + pushNotifications);
+                });
+            
+                // Handle Account Deactivation
+                function deactivateAccount() {
+                    const confirmDeactivation = confirm('Are you sure you want to deactivate your account? This action cannot be undone.');
+                    if (confirmDeactivation) {
+                        alert('Account deactivated!');
+                    }
+                }
+            
+                // Handle Two-Factor Authentication
+                function toggle2FA() {
+                    alert('Two-Factor Authentication enabled!');
+                }
+            
+                function disable2FA() {
+                    alert('Two-Factor Authentication disabled!');
+                }
+            </script>
+            
+
+
+
+
+
         </div>
     </div>
 
@@ -386,7 +908,17 @@ document.getElementById("current-number").innerText = currentNumber;
 
     </script>
     
-
+  <!-- Script for Profile Picture Preview -->
+  <script>
+    function previewProfilePicture(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const output = document.getElementById('profile-picture');
+            output.src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
 
     
 </body>
