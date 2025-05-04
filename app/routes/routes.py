@@ -67,8 +67,8 @@ def get_client_secrets_file():
 # Get the redirect URI. Always use the Render callback URL for production.
 def get_redirect_uri():
     if IS_PRODUCTION:
-        return "https://127.0.0.1:5000/callback"
-    return "https://tunnercasinoonline.onrender.com/callback"
+        return "https://tunnercasinoonline.onrender.com/callback"
+    return "http://127.0.0.1:5000/callback"
 #--------------------------------------------------------------------------------------------------
 # Login required decorator to ensure user is logged in
 def login_is_required(f):
