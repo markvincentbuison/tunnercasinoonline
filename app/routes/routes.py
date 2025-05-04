@@ -380,8 +380,7 @@ def manual_login():
     finally:
         cursor.close()
         conn.close()
-#=======================================================================================================================
-# Signup route
+#===# Signup route====================================================================================================================
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import bcrypt
 import re
@@ -451,75 +450,102 @@ def signup():
 from flask import render_template, flash, redirect, url_for
 from datetime import datetime
 from app.utils import confirm_token
-from app.routes.routes import get_db_connection  # or from your actual import path
+from app.routes.routes import get_db_connection  # Adjust the import path if needed
+from app.utils import confirm_token, generate_token, send_email
+from flask import Blueprint, request, redirect, url_for, flash
+from itsdangerous import URLSafeTimedSerializer
 
 @routes.route('/verify-email/<token>')
 def verify_email(token):
-    email = confirm_token(token)
-    if not email:
-        flash("Invalid or expired verification link.", "danger")
-        return redirect(url_for('routes.index'))
-
-    conn = None
-    cursor = None
+    conn = get_db_connection()
+    cursor = conn.cursor()
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Check if user exists and token not expired
-        cursor.execute("""
-            SELECT id, verification_token_expiry, is_verified 
-            FROM users 
-            WHERE email_address = %s AND is_verified = FALSE
-        """, (email,))
+        cursor.execute("SELECT * FROM users WHERE verification_token=%s", (token,))
         user = cursor.fetchone()
 
-        if not user:
-            flash("Email already verified or user does not exist.", "warning")
-            return redirect(url_for('routes.index'))
+        if user:
+            # Assuming the 'user_email' is the second column in your query
+            email_address = user['email_address']  # or whatever your actual column name is
 
-        # Check token expiry
-        token_expiry = user[1]
-        if datetime.utcnow() > token_expiry:
-            flash("Verification link has expired. Please request a new one.", "danger")
-            return redirect(url_for('routes.index'))
-
-        # Update user as verified
-        cursor.execute("""
-            UPDATE users 
-            SET is_verified = TRUE, verification_token = NULL, verification_token_expiry = NULL 
-            WHERE email_address = %s
-        """, (email,))
-        conn.commit()
-
-        flash("Email verified successfully! You can now log in.", "success")
-        return redirect(url_for('routes.index'))  # Redirect to login
-
+            cursor.execute("""
+                UPDATE users
+                SET is_verified=TRUE, verification_token=NULL
+                WHERE verification_token=%s
+            """, (token,))
+            conn.commit()
+            flash(f"Your Email ({email_address}) is now verified successfully", 'success')
+            return redirect(url_for('routes.index'))  # Redirect to the login page
+        else:
+            flash("Invalid or expired verification link.", 'danger')
     except Exception as e:
-        print(f"Verification error: {e}")
-        flash("Something went wrong during verification.", "danger")
-        return redirect(url_for('routes.index'))
-
+        print(f"Error verifying email: {e}")
+        import traceback; traceback.print_exc()
+        conn.rollback()
+        flash("An error occurred while verifying your email.", 'danger')
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
-#=======================================================================================================================
-
-
-#=== FOR SIGN UP FOR SENDING A VERIFICATION TO EMAIL====================================================================
-
-#=======================================================================================================================
-#=======================================================================================================================
-# Generate a verification token for email
+        cursor.close()
+        conn.close()
     
-#=== FOR SIGN UP FOR SENDING A VERIFICATION TO EMAIL====================================================================
-# Route to verify the email and token
+    return redirect(url_for('routes.index'))  # Redirect to the login page if any issues occur
+
+#=======EMAIL VERFICATION FOR SIGN UP===================================================================================
+@routes.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    print(f"Received token: {token}")  # Debugging
+    email = confirm_token(token)
+    
+    # Debugging to check token validation
+    print(f"Email after token confirmation: {email}")  # Debugging
+    
+    if not email:
+        flash("Invalid or expired verification link.", "danger")
+        return redirect(url_for('routes.index'))  # Redirect if token is invalid or expired
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Check if passwords match
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return redirect(url_for('routes.reset_password', token=token))  # Stay on the page if passwords don't match
+
+        # Hash the new password before saving it to the database
+        hashed_password = hash_password(new_password)
+
+        # Proceed to update the password in the database
+        conn = None
+        cursor = None
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Debugging SQL execution
+            print(f"Executing query to update password for {email}")
+
+            # Update the password for the user
+            cursor.execute("""
+                UPDATE users
+                SET password = %s
+                WHERE email_address = %s
+            """, (hashed_password, email))
+            conn.commit()
+
+            flash("Your password has been reset successfully!", "success")
+            return redirect(url_for('routes.index'))  # Redirect to login or home page
+
+        except Exception as e:
+            print(f"Password reset error: {e}")
+            flash("Something went wrong while resetting the password.", "danger")
+            return redirect(url_for('routes.index'))  # Redirect to home if error occurs
+        
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    # Render the reset password page with the token to allow password reset
+    return render_template('reset_password.html', token=token)
 
 #=======================================================================================================================
-#=======================================================================================================================
-#=======================================================================================================================
-#===========FORGOT PASSWORD PANEL=======================================================================================
-#============================FORGOT PASSWORD============================================================================
