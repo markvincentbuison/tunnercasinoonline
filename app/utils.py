@@ -117,7 +117,6 @@ def update_user_verification_status(email):
     # Implement logic to update the user's verified status.
     pass
 #=======================================================================================================================
-
 def update_user_password(email, hashed_password):
     """Updates the user’s password in the database."""
     # Implement logic to update the user's password.

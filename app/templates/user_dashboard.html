@@ -77,6 +77,49 @@
             <div id="home" class="content-box">
                 <h3>Home</h3>
                 <p>Welcome to the home section!</p>
+            
+                <hr>
+                <h4 class="mt-4"><i class="fas fa-gamepad"></i> Casino Games</h4>
+                <div class="row">
+                    <!-- Slot Machine Game -->
+                    <div class="col-md-4">
+                        <div class="card text-center shadow">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-dice fa-spin"></i> Slot Machine</h5>
+                                <p class="card-text">Try your luck with the spinning reels!</p>
+                                <button class="btn btn-success btn-block" onclick="playSlot()">Play</button>
+                                <p id="slot-result" class="mt-2 font-weight-bold text-primary"></p>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Dice Roll Game -->
+                    <div class="col-md-4">
+                        <div class="card text-center shadow">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-dice-five"></i> Roll the Dice</h5>
+                                <p class="card-text">See if you can get lucky on your roll!</p>
+                                <button class="btn btn-warning btn-block" onclick="rollDice()">Roll</button>
+                                <p id="dice-result" class="mt-2 font-weight-bold text-danger"></p>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Card Flip Game -->
+                    <div class="col-md-4">
+                        <div class="card text-center shadow">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-clone"></i> Card Flip</h5>
+                                <p class="card-text">Flip a card and test your luck!</p>
+                                <button class="btn btn-info btn-block" onclick="flipCard()">Flip</button>
+                                <p id="card-result" class="mt-2 font-weight-bold text-success"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
             </div>
             <div id="profile" class="content-box hidden">
                 <h3>Profile</h3>
@@ -171,5 +214,26 @@
           $('.alert').alert('close');
         }, 5000); // 5000ms = 5 seconds
       </script>
+
+
+      <script>
+        function playSlot() {
+            const symbols = ["🍒", "🔔", "🍋", "⭐", "💎"];
+            let result = [0, 0, 0].map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+            document.getElementById('slot-result').textContent = result.join(" ");
+        }
+    
+        function rollDice() {
+            const roll = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice-result').textContent = "You rolled a " + roll + " 🎲";
+        }
+    
+        function flipCard() {
+            const cards = ["Ace", "King", "Queen", "Jack", "Joker"];
+            const card = cards[Math.floor(Math.random() * cards.length)];
+            document.getElementById('card-result').textContent = "You flipped a " + card + " 🃏";
+        }
+    </script>
+    
 </body>
 </html>
