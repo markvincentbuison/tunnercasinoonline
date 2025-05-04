@@ -78,49 +78,81 @@
                 <h3>Home</h3>
                 <p>Welcome to the home section!</p>
             
-                <hr>
-                <h4 class="mt-4"><i class="fas fa-gamepad"></i> Casino Games</h4>
-                <div class="row">
-                    <!-- Slot Machine Game -->
-                    <div class="col-md-4">
-                        <div class="card text-center shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-dice fa-spin"></i> Slot Machine</h5>
-                                <p class="card-text">Try your luck with the spinning reels!</p>
-                                <button class="btn btn-success btn-block" onclick="playSlot()">Play</button>
-                                <p id="slot-result" class="mt-2 font-weight-bold text-primary"></p>
+                <div class="casino-games mt-4">
+                    <h4>🎲 Casino Games</h4>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card game-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Slot Machine</h5>
+                                    <button class="btn btn-primary" onclick="playSlots()">Play</button>
+                                    <p id="slot-result" class="mt-2 font-weight-bold"></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
             
-                    <!-- Dice Roll Game -->
-                    <div class="col-md-4">
-                        <div class="card text-center shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-dice-five"></i> Roll the Dice</h5>
-                                <p class="card-text">See if you can get lucky on your roll!</p>
-                                <button class="btn btn-warning btn-block" onclick="rollDice()">Roll</button>
-                                <p id="dice-result" class="mt-2 font-weight-bold text-danger"></p>
+                        <div class="col-md-4 mb-3">
+                            <div class="card game-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Dice Roll</h5>
+                                    <button class="btn btn-success" onclick="rollDice()">Roll</button>
+                                    <p id="dice-result" class="mt-2 font-weight-bold"></p>
+                                </div>
                             </div>
                         </div>
-                    </div>
             
-                    <!-- Card Flip Game -->
-                    <div class="col-md-4">
-                        <div class="card text-center shadow">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-clone"></i> Card Flip</h5>
-                                <p class="card-text">Flip a card and test your luck!</p>
-                                <button class="btn btn-info btn-block" onclick="flipCard()">Flip</button>
-                                <p id="card-result" class="mt-2 font-weight-bold text-success"></p>
+                        <div class="col-md-4 mb-3">
+                            <div class="card game-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Flip a Coin</h5>
+                                    <button class="btn btn-warning" onclick="flipCoin()">Flip</button>
+                                    <p id="coin-result" class="mt-2 font-weight-bold"></p>
+                                </div>
                             </div>
                         </div>
+
+
+                        <!-- Rock Paper Scissors -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Rock Paper Scissors</h5>
+            <button class="btn btn-outline-primary" onclick="playRPS('rock')">✊ Rock</button>
+            <button class="btn btn-outline-secondary" onclick="playRPS('paper')">✋ Paper</button>
+            <button class="btn btn-outline-danger" onclick="playRPS('scissors')">✌️ Scissors</button>
+            <p id="rps-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Number Guessing -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Number Guessing</h5>
+            <input type="number" class="form-control mb-2" id="guess-input" placeholder="Guess 1-10" min="1" max="10">
+            <button class="btn btn-info" onclick="guessNumber()">Guess</button>
+            <p id="guess-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Magic 8-Ball -->
+<div class="col-md-4 mb-3">
+    <div class="card game-card">
+        <div class="card-body text-center">
+            <h5 class="card-title">Magic 8-Ball</h5>
+            <input type="text" class="form-control mb-2" id="question" placeholder="Ask a yes/no question">
+            <button class="btn btn-dark" onclick="askMagic8Ball()">Ask</button>
+            <p id="magic-result" class="mt-2 font-weight-bold"></p>
+        </div>
+    </div>
+</div>
+
                     </div>
                 </div>
             </div>
             
-
-            </div>
             <div id="profile" class="content-box hidden">
                 <h3>Profile</h3>
                 <p>This is your profile section. Update your personal information here.</p>
@@ -216,24 +248,69 @@
       </script>
 
 
+
+
       <script>
-        function playSlot() {
-            const symbols = ["🍒", "🔔", "🍋", "⭐", "💎"];
-            let result = [0, 0, 0].map(() => symbols[Math.floor(Math.random() * symbols.length)]);
-            document.getElementById('slot-result').textContent = result.join(" ");
+        function playSlots() {
+            const symbols = ["🍒", "🍋", "🔔", "7️⃣", "🍊"];
+            let result = [
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)]
+            ];
+            document.getElementById('slot-result').innerText = result.join(' ');
         }
     
         function rollDice() {
-            const roll = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('dice-result').textContent = "You rolled a " + roll + " 🎲";
+            const result = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice-result').innerText = "You rolled a " + result + " 🎲";
         }
     
-        function flipCard() {
-            const cards = ["Ace", "King", "Queen", "Jack", "Joker"];
-            const card = cards[Math.floor(Math.random() * cards.length)];
-            document.getElementById('card-result').textContent = "You flipped a " + card + " 🃏";
+        function flipCoin() {
+            const result = Math.random() < 0.5 ? "Heads 🪙" : "Tails 🪙";
+            document.getElementById('coin-result').innerText = "It's " + result;
         }
+
+        function playRPS(player) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computer = choices[Math.floor(Math.random() * 3)];
+            let result = '';
+        
+            if (player === computer) result = "It's a tie! 🤝";
+            else if (
+                (player === 'rock' && computer === 'scissors') ||
+                (player === 'scissors' && computer === 'paper') ||
+                (player === 'paper' && computer === 'rock')
+            ) result = `You win! 🏆 Computer chose ${computer}`;
+            else result = `You lose! 💥 Computer chose ${computer}`;
+        
+            document.getElementById('rps-result').innerText = result;
+        }
+        
+        function guessNumber() {
+            const userGuess = parseInt(document.getElementById('guess-input').value);
+            const randomNumber = Math.floor(Math.random() * 10) + 1;
+        
+            if (userGuess === randomNumber) {
+                document.getElementById('guess-result').innerText = "Correct! 🎯 You guessed it!";
+            } else {
+                document.getElementById('guess-result').innerText = `Wrong! 😢 It was ${randomNumber}`;
+            }
+        }
+        
+        function askMagic8Ball() {
+            const responses = [
+                "Yes!", "No!", "Maybe...", "Definitely!", "Ask again later.",
+                "Not likely.", "Absolutely!", "I don't think so."
+            ];
+            const answer = responses[Math.floor(Math.random() * responses.length)];
+            document.getElementById('magic-result').innerText = answer;
+        }
+        
     </script>
+    
+
+
     
 </body>
 </html>
