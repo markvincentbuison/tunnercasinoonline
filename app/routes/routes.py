@@ -476,18 +476,14 @@ def verify_email(token):
     try:
         cursor.execute("SELECT * FROM users WHERE verification_token=%s", (token,))
         user = cursor.fetchone()
-
         if user:
-            # Assuming the 'user_email' is the second column in your query
-            email_address = user['email_address']  # or whatever your actual column name is
-
             cursor.execute("""
                 UPDATE users
                 SET is_verified=TRUE, verification_token=NULL
                 WHERE verification_token=%s
             """, (token,))
             conn.commit()
-            flash(f"Your Email ({email_address}) is now verified successfully!", 'success')
+            flash("Email verified successfully. You can now log in.", 'success')
             return redirect(url_for('routes.index'))  # Redirect to the login page
         else:
             flash("Invalid or expired verification link.", 'danger')
@@ -501,6 +497,7 @@ def verify_email(token):
         conn.close()
     
     return redirect(url_for('routes.index'))  # Redirect to the login page if any issues occur
+
 #=======EMAIL VERFICATION FOR SIGN UP===================================================================================
 @routes.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -525,6 +522,7 @@ def reset_password(token):
 
         # Hash the new password before saving it to the database
         hashed_password = hash_password(new_password)
+
         # Proceed to update the password in the database
         conn = None
         cursor = None
